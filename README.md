@@ -6,19 +6,19 @@
 
 ## 中文
 
-一个基于Web的自然拼读字母钢琴应用，帮助用户通过音乐学习英语自然拼读。
+一个基于Web的自然拼读字母钢琴应用，利用可以发声的钢琴式按钮来学习英语自然拼读。
 
 ### 项目简介
 
-Phonics Piano 是一个交互式的自然拼读学习工具，将字母和发音与钢琴键盘结合，让学习变得更加有趣和直观。
+Phonics Piano 是一个交互式的自然拼读学习工具，使用类似钢琴按键的可发声按钮，让用户通过点击不同按键来学习英语字母和自然拼读发音，使学习过程更加直观和有趣。
 
 ### 功能特点
 
-- 🎹 钢琴式交互界面
-- 🔊 自然拼读发音
-- 📚 单词学习功能
-- 🎨 支持深色主题
-- 📱 响应式设计
+- 🎹 钢琴式交互界面 - 点击类似钢琴的按键即可听到发音
+- 🔊 自然拼读发音 - 每个按键对应不同的自然拼读发音
+- 📚 单词学习功能 - 配合单词学习，加深理解
+- 🎨 支持深色主题 - 保护视力，舒适学习
+- 📱 响应式设计 - 支持各种设备访问
 
 ### 项目结构
 
@@ -42,7 +42,7 @@ piano-github/
 
 1. 克隆或下载本项目
 2. 在浏览器中打开 `index.html` 文件
-3. 开始使用自然拼读字母钢琴
+3. 点击钢琴式按键，聆听自然拼读发音，开始学习
 
 ### 技术栈
 
@@ -63,19 +63,19 @@ MIT License
 
 ## English
 
-A web-based phonics piano application that helps users learn English phonics through music.
+A web-based phonics piano application that uses sound-producing piano-style buttons to learn English phonics.
 
 ### Project Overview
 
-Phonics Piano is an interactive phonics learning tool that combines letters and pronunciation with a piano keyboard, making learning more fun and intuitive.
+Phonics Piano is an interactive phonics learning tool that uses piano-style clickable buttons that produce sounds. Users can learn English letters and phonics pronunciation by clicking different keys, making the learning process more intuitive and engaging.
 
 ### Features
 
-- 🎹 Piano-style interactive interface
-- 🔊 Phonics pronunciation
-- 📚 Word learning functionality
-- 🎨 Dark theme support
-- 📱 Responsive design
+- 🎹 Piano-style interactive interface - Click piano-like keys to hear pronunciations
+- 🔊 Phonics pronunciation - Each key corresponds to a different phonics sound
+- 📚 Word learning functionality - Combined with word learning for better understanding
+- 🎨 Dark theme support - Eye protection for comfortable learning
+- 📱 Responsive design - Supports access on various devices
 
 ### Project Structure
 
@@ -99,7 +99,7 @@ piano-github/
 
 1. Clone or download this project
 2. Open `index.html` in your browser
-3. Start using the Phonics Piano
+3. Click the piano-style keys to listen to phonics pronunciations and start learning
 
 ### Tech Stack
 
