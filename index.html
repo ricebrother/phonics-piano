@@ -1,0 +1,2326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自然拼读-字母钢琴</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <style>
+        /* CSS 变量 - 浅色主题（默认） */
+        :root {
+            --bg-primary: #f3f4f6;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f8f9fa;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --text-muted: #6b7280;
+            --border-color: #d1d5db;
+            --border-light: #e5e7eb;
+            --vowel-color: #dc2626;
+            --consonant-color: #059669;
+            --btn-blue: #3b82f6;
+            --btn-blue-hover: #2563eb;
+            --btn-green: #10b981;
+            --btn-green-hover: #059669;
+            --btn-orange: #f59e0b;
+            --btn-orange-hover: #d97706;
+            --btn-red: #ef4444;
+            --btn-red-hover: #dc2626;
+            --btn-purple: #8b5cf6;
+            --btn-purple-hover: #7c3aed;
+            --success-bg: #10b981;
+            --success-text: #ffffff;
+            --error-bg: #dc2626;
+            --error-text: #ffffff;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+            --shadow-dark: rgba(0, 0, 0, 0.2);
+        }
+        
+        /* CSS 变量 - 暗色主题 */
+        body.dark-theme {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #e8e8e8;
+            --text-secondary: #d0d0d0;
+            --text-muted: #8a8a8a;
+            --border-color: #3a3a3a;
+            --border-light: #2a2a2a;
+            --vowel-color: #d4787d;
+            --consonant-color: #7ec89a;
+            --btn-blue: #7aa8d4;
+            --btn-blue-hover: #8ab8e4;
+            --btn-green: #7ec89a;
+            --btn-green-hover: #8ed8aa;
+            --btn-orange: #d4a656;
+            --btn-orange-hover: #e4b666;
+            --btn-red: #d4787d;
+            --btn-red-hover: #e4888d;
+            --btn-purple: #a78bfa;
+            --btn-purple-hover: #b79bfa;
+            --success-bg: #1a2e1a;
+            --success-text: #7ec89a;
+            --error-bg: #2e1a1a;
+            --error-text: #d4787d;
+            --shadow-light: rgba(0, 0, 0, 0.2);
+            --shadow-medium: rgba(0, 0, 0, 0.3);
+            --shadow-dark: rgba(0, 0, 0, 0.4);
+        }
+        
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+            transition: background-color 0.3s ease;
+        }
+        
+        .all{
+            display: flex;
+            flex-direction: column;
+            width: 90%;
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+        
+        .pianotitle{
+            font-size: 36px;
+            text-align: center;
+            color: var(--consonant-color);
+        }
+        
+        /* 模式状态指示器样式 */
+        .mode-indicator {
+            top: 20px;
+            right: 20px;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+            background-color: #6b7280;
+            transition: background-color 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 2px 10px var(--shadow-dark);
+            display: block !important;
+        }
+        
+        .mode-indicator.sound-only {
+            background-color: var(--btn-purple);
+        }
+
+        /* 详情模式样式 */
+        .mode-indicator.detail-view {
+            background-color: var(--btn-orange);
+        }
+        
+        .container {
+            width: 96%;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        
+        h1 {
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            font-weight: bold;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* 输入区域样式 */
+        .input-section {
+            margin-bottom: 1.5rem;
+            clear: both;
+        }
+        
+        .input-section label {
+            display: block;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        #letterInput {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            min-height: 100px;
+            resize: vertical;
+            font-family: monospace;
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+        
+        #generateBtn {
+            background-color: var(--btn-blue);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            align-self: flex-start;
+        }
+        
+        #generateBtn:hover {
+            background-color: var(--btn-blue-hover);
+        }
+
+        /* 音频控制按钮样式 */
+        .audio-controls {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            align-self: flex-start;
+        }
+
+        #loadAudioBtn {
+            background-color: var(--btn-green);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #loadAudioBtn:hover {
+            background-color: var(--btn-green-hover);
+        }
+
+        #clearAudioCacheBtn {
+            background-color: var(--btn-red);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #clearAudioCacheBtn:hover {
+            background-color: var(--btn-red-hover);
+        }
+
+        /* 加载进度提示样式 */
+        .loading-progress {
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+        }
+        
+        /* 琴键区域样式 */
+        .words-container {
+            display: flex;
+            flex-direction: column;
+            margin: 1rem 0;
+        }
+        
+        .word-group {
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem; 
+            align-items: flex-start;
+            justify-content: center; 
+            width: 100%; 
+            overflow: visible; 
+        }
+
+        .vertical-key-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: auto repeat(3, 1fr);
+            gap: 0.4rem; 
+            width: fit-content; 
+            align-items: center;
+            position: relative;
+        }
+
+        .vertical-key-group .unified-key:first-child {
+            grid-column: 1 / -1;
+            min-width: 85px;
+            position: relative;
+        }
+
+        /* 统一按钮样式 */
+        .unified-key {
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+            text-align: center;
+            min-width: 85px;
+            font-size: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15), 
+                        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            position: relative; 
+        }
+
+        /* 左侧白色半透明区域 */
+        .unified-key.has-popup-tip::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50%; 
+            height: 100%;
+            background-color: rgba(255,255,255,0.3); 
+            border-bottom-left-radius: 5px;
+            border-top-left-radius: 5px;
+            pointer-events: auto; 
+            z-index: 2;
+        }
+
+        .unified-key .sound-area {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .unified-key:active, .unified-key.click-animate {
+            transform: translateY(-9px);
+            box-shadow: 0 -26px 26px rgba(255,215,0, 0.5);
+            font-size: 44px;
+            background-color: #e53e3e;
+            color: white;
+        }
+
+        /* 颜色区分逻辑 */
+        .unified-key.consonant-main {
+            background-color: var(--consonant-color);
+            color: white;
+        }
+        .unified-key.vowel-main {
+            background-color: var(--vowel-color);
+            color: white;
+        }
+        .unified-key.consonant-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--consonant-color);
+            display: none;
+        }
+        .unified-key.vowel-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--vowel-color);
+            display: none;
+        }
+        .unified-key.separator {
+            background-color: var(--bg-secondary);
+            color: var(--text-muted);
+            border: 2px dashed var(--border-color);
+        }
+        
+        .unified-key.template-key {
+            border: 3px solid #ffd700;
+        }
+        
+        /* 悬浮弹窗样式 */
+        .key-popup {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: -12px; 
+            padding: 5px; 
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px var(--shadow-medium); 
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); 
+            grid-auto-rows: auto; 
+            gap: 3px; 
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            border-radius: 4px; 
+        }
+        
+        body:not(.dark-theme) .key-popup {
+            background-color: #e5e5e5;
+            border: 2px solid #999;
+        }
+        
+        body.dark-theme .key-popup {
+            border: 2px solid #888;
+        }
+
+        .key-popup.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 弹窗内按钮样式 */
+        .popup-item {
+            padding: calc(0.2rem * 0.9) calc(0.2rem * 0.9);
+            border-radius: 5px;
+            font-size: calc(36px * 0.9);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+            text-align: center;
+            min-width: calc(85px * 0.9);
+            box-shadow: 0 4px 6px var(--shadow-light), 
+                        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            color: white !important;
+        }
+        
+        body:not(.dark-theme) .popup-item {
+            color: #121212 !important;
+        }
+
+        .popup-item.vowel-secondary {
+            background-color: var(--vowel-color);
+        }
+
+        .popup-item.consonant-secondary {
+            background-color: var(--consonant-color);
+        }
+
+        .popup-item:active, .popup-item.click-animate {
+            transform: translateY(-9px);
+            box-shadow: 0 -26px 26px rgba(255,215,0, 0.3);
+            font-size: calc(44px * 0.9);
+            background-color: var(--btn-blue);
+            color: white !important;
+        }
+        
+        body:not(.dark-theme) .popup-item:active,
+        body:not(.dark-theme) .popup-item.click-animate {
+            background-color: #b8d4f0;
+            color: #121212 !important;
+        }
+        
+        /* 组合键容器样式 */
+        .combined-key {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin: 0.1rem;
+            font-size: 56px;
+            font-weight:bold;
+            padding: 0.3rem 0.3rem;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px var(--shadow-medium);
+            background-color: var(--vowel-color) !important;
+            color: white;
+            height:83px;
+        }
+        
+        .combined-key-part {
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+        }
+        
+        .combined-key-part.vowel-main {
+            color: white;
+        }
+        
+        .combined-key-part.consonant-main {
+            color: white;
+            background-color: var(--consonant-color);
+        }
+        
+        .combined-key-part:active:not(.non-interactive) {
+            transform: scale(1.1);
+            text-shadow: 0 0 10px #fff;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .combined-key-part.non-interactive {
+            cursor: default;
+            opacity: 0.9;
+            pointer-events: none;
+        }
+        
+        /* 单词拼写区 + 提交按钮容器 */
+        .danci-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+        #danci {
+            flex: 1;
+            background-color: var(--bg-secondary);
+            border: 1px dashed var(--btn-blue);
+            border-radius: 3px;
+            min-height: 96px;
+            display: flex !important;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            transition: opacity 0.3s, background-color 0.3s;
+        }
+        
+        /* 按钮组容器 */
+        .danci-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 80px;
+        }
+        
+        /* 拼写区禁用状态样式 */
+        #danci.disabled-mode {
+            opacity: 0.4;
+            background-color: var(--bg-tertiary);
+            pointer-events: none;
+        }
+
+        #submitDanci {
+            background: var(--btn-orange);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            width: 100%;
+        }
+        #submitDanci:hover {
+            background: var(--btn-orange-hover);
+        }
+        
+        #backspaceDanci {
+            background-color: var(--btn-blue);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        
+        #backspaceDanci:hover {
+            background-color: var(--btn-blue-hover);
+        }
+        
+        #clearDanci {
+            background-color: #6b7280;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        
+        #clearDanci:hover {
+            background-color: #4b5563;
+        }
+        
+        #danci .unified-key {
+            margin: 0.1rem;
+            font-size: 52px;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            padding:8px;
+            min-width: 50px;
+            width: fit-content;
+        }
+        
+        .danci-title {
+            font-size: 1.3rem;
+            color: var(--btn-blue);
+            text-align: left;
+            width: 100%;
+            display:block !important;
+        }
+        
+        /* 消息提示区样式 - Flex 布局 */
+        .status-bar-wrapper {
+            display: flex;
+            width: 400px;
+            max-width: 100%;
+            margin: 0.5rem auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .message-box {
+            flex: 1;
+            height: 60px;
+            background-color: var(--bg-tertiary); 
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-secondary);
+            transition: background-color 0.3s ease;
+        }
+        .message-box.success {
+            background-color: var(--success-bg); 
+            color: var(--success-text);
+        }
+        .message-box.error {
+            background-color: var(--error-bg); 
+            color: var(--error-text);
+        }
+
+        /* 快捷按钮通用样式 */
+        .shortcut-btn {
+            display: none; /* 默认隐藏 */
+            padding: 0 1rem;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+            height: 40px; /* 固定高度与消息框对齐 */
+        }
+        
+        #shortcutDetailBtn {
+            background-color: var(--btn-blue);
+        }
+        #shortcutDetailBtn:hover {
+            background-color: var(--btn-blue-hover);
+        }
+
+        #shortcutPlayBtn {
+            background-color: var(--btn-green);
+        }
+        #shortcutPlayBtn:hover {
+            background-color: var(--btn-green-hover);
+        }
+        
+        /* 听音写词区域 */
+        .listen-write-section {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px var(--shadow-medium);
+        }
+        .listen-write-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+        #wordListInput {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            min-height: 80px;
+            resize: vertical;
+            font-family: monospace;
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+        #startListenWrite {
+            background: var(--btn-green);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #startListenWrite:hover {
+            background: var(--btn-green-hover);
+        }
+        #listenWriteStatus {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-secondary);
+        }
+        
+        .shortcut-hint {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-style: italic;
+            display:block;
+        }
+        
+        .error-message {
+            color: var(--error-text);
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 6px;
+            background-color: var(--error-bg);
+            display: none;
+            clear: both;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            #generateBtn, #clearDanci, #submitDanci, #loadAudioBtn, #clearAudioCacheBtn {
+                width: 100%;
+                font-size: 14px;
+                padding: 0.5rem;
+            }
+            .audio-controls {
+                flex-direction: column;
+                width: 100%;
+            }
+            .danci-wrapper {
+                flex-direction: column;
+            }
+            .control-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .unified-key {
+                min-width: 36px;
+                font-size: 22px !important;
+                padding: 0.3rem;
+            }
+            
+            .vertical-key-group {
+                gap: 0.2rem;
+                grid-template-columns: repeat(3, 36px);
+            }
+            
+            .vertical-key-group .unified-key:first-child {
+                min-width: 100%;
+                grid-column: 1 / -1;
+                font-size: 26px !important;
+            }
+            
+            .word-group {
+                padding: 0.5rem;
+                gap: 0.5rem;
+            }
+            .mode-indicator {
+                top: auto;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            .combined-key {
+                font-size: 28px !important;
+            }
+            .popup-item {
+                font-size: 18px !important;
+                min-width: 32px !important;
+                padding: 0.3rem 0.4rem !important;
+            }
+            .key-popup {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .status-bar-wrapper {
+                flex-direction: column;
+                width: 100%;
+            }
+            .shortcut-btn {
+                width: 100%;
+                font-size: 12px;
+                padding: 8px;
+            }
+            .pianotitle {
+                font-size: 20px;
+            }
+            .pianotitle img {
+                width: 40px !important;
+            }
+            .toolbar {
+                padding: 8px;
+                gap: 6px;
+            }
+            .toolbar-btn {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+            .toggle-switch-label {
+                font-size: 12px;
+            }
+            #letterInput {
+                min-height: 60px;
+                font-size: 12px;
+            }
+            .input-section label {
+                font-size: 12px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .unified-key {
+                min-width: 30px;
+                font-size: 18px !important;
+            }
+            .vertical-key-group {
+                grid-template-columns: repeat(3, 30px);
+            }
+            .vertical-key-group .unified-key:first-child {
+                font-size: 22px !important;
+            }
+            .popup-item {
+                font-size: 16px !important;
+                min-width: 28px !important;
+            }
+        }
+        
+        #cav {
+            cursor: pointer;
+            margin-top: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 1500px;
+        }
+        
+        #total {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            display: none;
+            cursor: pointer;
+            pointer-events: none;
+        }
+        #total.active {
+            pointer-events: auto;
+        }
+        
+        /* 工具栏样式 */
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 1rem;
+            padding: 12px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .demo-play-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background-color: var(--btn-orange);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .demo-play-btn:hover {
+            background-color: var(--btn-orange-hover);
+            transform: scale(1.1);
+        }
+        
+        .demo-play-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .demo-play-btn.running {
+            background-color: var(--btn-red);
+        }
+        
+        .toolbar-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            background-color: #9ca3af;
+            color: white;
+        }
+        
+        .toolbar-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px var(--shadow-medium);
+        }
+        
+        .toolbar-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* 激活状态 */
+        .toolbar-btn.active {
+            background-color: var(--btn-blue);
+            color: white;
+        }
+        .toolbar-btn.active:hover {
+            background-color: var(--btn-blue-hover);
+        }
+        
+        /* 只读模式激活 */
+        .toolbar-btn.mode-sound.active {
+            background-color: var(--btn-purple);
+            color: white;
+        }
+        .toolbar-btn.mode-sound.active:hover {
+            background-color: var(--btn-purple-hover);
+        }
+        
+        /* 单词表模式激活 */
+        .toolbar-btn.mode-detail.active {
+            background-color: var(--btn-orange);
+            color: white;
+        }
+        .toolbar-btn.mode-detail.active:hover {
+            background-color: var(--btn-orange-hover);
+        }
+        
+        /* 拼写模式激活 */
+        .toolbar-btn.mode-spell.active {
+            background-color: var(--btn-green);
+            color: white;
+        }
+        .toolbar-btn.mode-spell.active:hover {
+            background-color: var(--btn-green-hover);
+        }
+        
+        /* 胶囊型切换开关 */
+        .toggle-switch {
+            display: flex;
+            background-color: var(--bg-tertiary);
+            border-radius: 20px;
+            padding: 4px;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        
+        .toggle-switch-label {
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            z-index: 2;
+            position: relative;
+        }
+        
+        .toggle-switch-label.active {
+            color: white;
+            background-color: var(--btn-blue);
+        }
+        
+        /* 主题切换按钮 */
+        .theme-toggle-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .theme-toggle-btn:hover {
+            background-color: var(--border-color);
+        }
+        
+        .theme-toggle-btn .icon {
+            font-size: 16px;
+        }
+        
+        .toggle-switch-label:first-child {
+            margin-right: 4px;
+        }
+        
+        .toggle-switch-label:last-child {
+            margin-left: 4px;
+        }
+        
+        /* 隐藏输入区域的样式 */
+        .input-section.hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .toolbar-btn {
+                width: 100%;
+            }
+            .toggle-switch {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<canvas id="total"></canvas>
+  <div class="all"> 
+    <div class="container">
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <button class="demo-play-btn" id="demoPlayBtn" title="自动演示按键">▶</button>
+            <button class="toolbar-btn mode-sound" id="modeSound">只读模式</button>
+            <button class="toolbar-btn mode-detail" id="modeDetail">单词表模式</button>
+            <button class="toolbar-btn mode-spell active" id="modeSpell">拼写模式</button>
+            
+            <div class="toggle-switch" id="inputToggle">
+                <span class="toggle-switch-label" id="showInputLabel">显示输入</span>
+                <span class="toggle-switch-label active" id="hideInputLabel">隐藏输入</span>
+            </div>
+            
+            <button class="theme-toggle-btn" id="themeToggle">
+                <span class="icon">🌙</span>
+                <span class="text">暗色</span>
+            </button>
+        </div>
+        
+        <div class="input-section hidden">
+            <label for="letterInput">
+                输入格式化的字母组合（新格式说明：<br>
+                1. v@ 后续为元音，c@ 后续为辅音（同一行可混合标记）<br>
+                2. 复合键格式：c-k-ck=k（-分隔子键，=后面是发音【仅用于音频，不显示】）<br>
+                3. . 作为分隔符，空格分隔不同键，换行即为新行<br>
+                4. 模板键格式：a_e=ae（_为占位符，用于嵌入辅音）
+            </label>
+            <div class="error-message" id="errorMsg"></div>
+            <div class="input-group">
+                <textarea id="letterInput">v@ a e-ea-a=e i-y-e-a=i o-a=o u-o-ou=u oo-u-oul-o=oo ou-ow=ou
+v@ ai-a_e-ay-a=ae ee-e_e-ea-ie-e=ee igh-i_e-ie-y-i=ie oa-o_e-ow-o=oe ue-u_e-u=ue oo-u_e-ue-o=oo2 oi-oy=oi
+v@ ar-a=ar or-oor-oar-ore-au-aw-al-a=or er-ur-ir-ear=er .-a-e-i-o-u-er-or-io-ia=0 air-are-eir=air eer-ear-eir=eer our-ure=oor
+c@ p-pp=p b-bb=b t-tt-ed=t d-dd-ed=d c-k-ck=c g-gg-gh-gue=g
+c@ f-ff-ph-gh=f v-ve=v s-c-ss-se=s z-zz-s-se=z th th=th2
+c@ h-wh=h r-rr=r l-ll-le-al-el-il-ul=l m-mm-mb=m n-nn=n ng-n=ng
+c@ sh-s=sh si ch-tch=ch j-g-ge=j ts ds=dz
+c@ tr dr y w-wh=w x=ks qu</textarea>
+                <button id="generateBtn">生成琴键</button>
+                
+                <div class="audio-controls">
+                    <button id="loadAudioBtn">加载音频到本地</button>
+                    <button id="clearAudioCacheBtn">清空音标缓存</button>
+                </div>
+                
+                <div class="loading-progress" id="loadingProgress">正在加载音频... 0/0</div>
+                
+            </div>
+        </div>
+        
+        <div class="pianotitle">
+            <span><img src='piano.jpg' width="62px" alt="钢琴图标"></span>
+            <span>&nbsp;自然拼读&nbsp;字母钢琴&nbsp;</span>
+            <span><img src='piano.jpg' width="62px" alt="钢琴图标"></span>
+        </div>
+        
+        <div id="wordsContainer" class="words-container"></div>
+        
+        <div class="danci-wrapper">
+            <div id="danci"></div>
+            <div class="danci-buttons">
+                <button id="submitDanci">提交</button>
+                <button id="backspaceDanci">退格</button>
+                <button id="clearDanci">清空</button>
+            </div>
+        </div>
+        
+        <!-- 消息框 + 详情按钮 + 听写按钮 -->
+        <div class="status-bar-wrapper">
+            <div class="message-box" id="messageBox">准备就绪</div>
+            <button id="shortcutDetailBtn" class="shortcut-btn">详情</button>
+            <button id="shortcutPlayBtn" class="shortcut-btn">听写</button>
+        </div>
+
+        <div id="textContentDisplay" class="word-container">
+            <canvas id="cav" width="1200" height="500"></canvas>	
+        </div>
+        
+        
+        <!-- 听音写词模块 -->
+        <div class="listen-write-section">
+            <div class="listen-write-row">
+                <textarea id="wordListInput" placeholder="请输入单词清单，每行格式：单词@含义">cat@猫
+dog@狗
+apple@苹果
+book@书
+pen@钢笔</textarea>
+                <button id="startListenWrite">开始听音写词</button>
+                <span id="listenWriteStatus">准备就绪</span>
+            </div>
+        </div>
+        
+        <div class="shortcut-hint">快捷键：Q退格 | P只读模式 | 2单词表模式 | 3拼写模式 | G分隔符(仅拼写模式) | Enter提交 | 4听写(自动切换拼写模式) | 1清空 | 顶部胶囊按钮切换输入显示</div>
+    </div>	
+  </div>
+
+    <script src="database.js"></script>
+    <script src="map.js"></script>
+   
+
+    <script>
+        const danciContainer = document.getElementById('danci');
+        const errorMsg = document.getElementById('errorMsg');
+        const danciHistory = [];
+        let soundOnlyMode = false;
+        const modeIndicator = document.getElementById('modeIndicator');
+        let lastTemplateElement = null;
+        const messageBox = document.getElementById('messageBox');
+        const loadingProgress = document.getElementById('loadingProgress');
+        const shortcutDetailBtn = document.getElementById('shortcutDetailBtn');
+        const shortcutPlayBtn = document.getElementById('shortcutPlayBtn');
+		
+		let dictationReadCount = 2;
+        
+        // 弹窗功能开关
+        let popupFunctionEnabled = true;
+        // 详情跳转模式开关
+        let detailViewMode = false;
+
+        // ====================== 更新快捷按钮逻辑 ======================
+        function updateShortcutBtn(letter, phoneticCode) {
+            const symbol = map2[phoneticCode] || phoneticCode;
+            const dbKey = `${letter}_${symbol}`;
+            
+            // 检查数据库
+            if (WORD_DATABASE && WORD_DATABASE[dbKey]) {
+                // 找到了：显示按钮，设置文本
+                shortcutDetailBtn.textContent = `${letter} → ${symbol}`;
+                shortcutDetailBtn.style.display = 'block';
+                
+                // 新增：显示听写按钮
+                shortcutPlayBtn.textContent = `${letter} 听写`;
+                shortcutPlayBtn.style.display = 'block';
+                
+                // 绑定详情点击事件
+                shortcutDetailBtn.onclick = () => {
+                    handleDetailClick(letter, phoneticCode);
+                };
+
+                // 绑定听写点击事件
+                shortcutPlayBtn.onclick = () => {
+                    handleListenWriteClick(dbKey);
+                };
+            } else {
+                // 没找到：隐藏按钮
+                shortcutDetailBtn.style.display = 'none';
+                shortcutPlayBtn.style.display = 'none';
+            }
+        }
+
+        // ====================== 新增：听写按钮点击逻辑（含智能解析） ======================
+        function handleListenWriteClick(dbKey) {
+            const rawContent = WORD_DATABASE[dbKey];
+            if (!rawContent) return;
+
+            // 1. 智能解析和清洗
+            const formattedString = parseAndCleanDatabaseContent(rawContent);
+
+            if (!formattedString) {
+                updateMessageBox('未找到有效的单词数据', 'error');
+                return;
+            }
+
+            // 2. 模拟输入：填入下方文本框
+            document.getElementById('wordListInput').value = formattedString;
+
+            // 3. 模拟听写逻辑：直接开始
+            // 重置听写状态
+            currentWordIndex = 0; 
+            isListeningWriteMode = true;
+            
+            // 自动切换到拼写模式
+            switchMode('spell');
+            
+            // 解析填入的文本生成列表
+            wordList = formattedString.split('\n').map(l => l.trim()).filter(l => l.includes('@')).map(l => { 
+                const parts = l.split('@'); 
+                return { word: parts[0].trim().toLowerCase(), meaning: parts.slice(1).join('@').trim() }; 
+            });
+
+            if (wordList.length === 0) {
+                updateMessageBox('解析数据为空', 'error');
+                return;
+            }
+
+            // 更新状态显示
+            listenWriteStatus.textContent = `重点练习: 1/${wordList.length}`;
+            
+            // 清空拼写区并开始播放
+            clearDanci();
+            setTimeout(() => {
+                playCurrentWord();
+            }, 300);
+            
+            updateMessageBox('开始听写练习', 'success');
+        }
+
+        /*
+        // ====================== 全部单词版本：辅助函数：解析和清洗数据库内容（优化版） ======================
+		function parseAndCleanDatabaseContent(text) {
+			const results = [];
+			// 按行分割数据，逐行处理以避免正则匹配的复杂性
+			const lines = text.split('\n');
+
+			lines.forEach(line => {
+				// 去除首尾空白
+				line = line.trim();
+				if (!line) return;
+
+				// 跳过标题行，例如 [设置], [音节 1]
+				if (line.startsWith('[')) return;
+
+				// 查找等号位置
+				const eqIndex = line.indexOf('=');
+				if (eqIndex === -1) return; // 没有等号则跳过
+
+				const rawWord = line.substring(0, eqIndex).trim();
+				const rawMeaning = line.substring(eqIndex + 1).trim();
+
+				// 1. 校验：含义必须包含中文，排除如 "ch = tʃ" 这种音标数据
+				if (!/[\u4e00-\u9fa5]/.test(rawMeaning)) {
+					return;
+				}
+
+				// 2. 校验：单词部分必须包含字母
+				if (!/[a-zA-Z]/.test(rawWord)) {
+					return;
+				}
+
+				// 3. 清洗单词：
+				// 去掉单词里的 - 符号
+				// 去掉单词里的 8 符号（根据之前的需求，以及确保 -a-nd 变成 and）
+				let cleanWord = rawWord
+					.replace(/8/g, '')   // 去除8
+					.replace(/-/g, '');  // 去除连字符
+
+				// 再次检查清洗后是否为空
+				if (!cleanWord) return;
+
+				// 4. 拼接结果
+				results.push(`${cleanWord}@${rawMeaning}`);
+			});
+
+			return results.join('\n');
+		}
+		
+		*/
+		
+		//只获取单音节单词表：音节1
+		function parseAndCleanDatabaseContent(text) {
+			const results = [];
+			const lines = text.split('\n');
+			
+			// 使用 for 循环以便在遇到多音节标题时能够中断 (break)
+			for (let i = 0; i < lines.length; i++) {
+				let line = lines[i].trim();
+				if (!line) continue;
+
+				// 检查是否为音节标题行，例如 [音节 2]
+				const syllableMatch = line.match(/^\[音节\s*(\d+)\]$/);
+				if (syllableMatch) {
+					const num = parseInt(syllableMatch[1]);
+					// 如果音节数大于1，说明已经进入多音节区域，停止解析
+					if (num > 1) {
+						break;
+					}
+					// 如果是 [音节 1]，跳过该标题行，继续解析下面的内容
+					continue;
+				}
+
+				// 跳过其他标题行，例如 [设置]
+				if (line.startsWith('[')) continue;
+
+				const eqIndex = line.indexOf('=');
+				if (eqIndex === -1) continue;
+
+				const rawWord = line.substring(0, eqIndex).trim();
+				const rawMeaning = line.substring(eqIndex + 1).trim();
+
+				// 1. 校验：含义必须包含中文
+				if (!/[\u4e00-\u9fa5]/.test(rawMeaning)) {
+					continue;
+				}
+
+				// 2. 校验：单词部分必须包含字母
+				if (!/[a-zA-Z]/.test(rawWord)) {
+					continue;
+				}
+
+				// 3. 清洗单词
+				let cleanWord = rawWord
+					.replace(/8/g, '')   
+					.replace(/-/g, '');  
+
+				if (!cleanWord) continue;
+
+				results.push(`${cleanWord}@${rawMeaning}`);
+			}
+
+			return results.join('\n');
+		}
+	
+	//======================
+
+        // ====================== 简化版音频缓存 ======================
+        const audioMemoryCache = new Map();
+        const loadingAudioSet = new Set();
+
+        async function preloadKeyboardAudio() {
+            const phonetics = getKeyboardPhonetics();
+            if (phonetics.length === 0) return;
+            loadingProgress.style.display = 'block';
+            let loadedCount = 0, errorCount = 0;
+            for (let i = 0; i < phonetics.length; i++) {
+                const phonetic = phonetics[i];
+                try {
+                    loadingProgress.textContent = `加载中: ${phonetic}.mp3 (${i+1}/${phonetics.length})`;
+                    const audio = new Audio(`yinbiao/1/${phonetic}.mp3`);
+                    await new Promise((resolve, reject) => {
+                        audio.oncanplaythrough = resolve;
+                        audio.onerror = reject;
+                        setTimeout(() => reject(new Error('超时')), 5000);
+                    });
+                    audioMemoryCache.set(phonetic, audio);
+                    loadedCount++;
+                } catch (error) { errorCount++; }
+            }
+            loadingProgress.style.display = 'none';
+            updateMessageBox(`加载完成: 成功${loadedCount}, 失败${errorCount}`, errorCount > 0 ? 'error' : 'success');
+        }
+
+        function playSound(phonetic) {
+            if (phonetic === '00') return;
+            const safePhonetic = phonetic.replace(/[^a-zA-Z0-9_]/g, '_').replace(/_+/g, '_');
+            if (audioMemoryCache.has(safePhonetic)) {
+                const audio = audioMemoryCache.get(safePhonetic);
+                audio.currentTime = 0;
+                audio.play().catch(e => playNetworkSound(safePhonetic));
+                return;
+            }
+            playNetworkSound(safePhonetic, true);
+        }
+
+        function playNetworkSound(safePhonetic, cache = false) {
+            if (loadingAudioSet.has(safePhonetic)) return;
+            loadingAudioSet.add(safePhonetic);
+            const sound = new Audio(`yinbiao/1/${safePhonetic}.mp3`);
+            sound.onerror = () => loadingAudioSet.delete(safePhonetic);
+            sound.oncanplaythrough = () => {
+                loadingAudioSet.delete(safePhonetic);
+                if (cache) audioMemoryCache.set(safePhonetic, sound);
+            };
+            sound.play().catch(e => loadingAudioSet.delete(safePhonetic));
+        }
+
+        function clearAudioCache() {
+            audioMemoryCache.clear();
+            updateMessageBox('✅ 缓存已清空', 'success');
+        }
+
+        function getKeyboardPhonetics() {
+            const input = document.getElementById('letterInput').value.trim();
+            const phonetics = new Set();
+            if (!input) return [];
+            input.split('\n').forEach(line => {
+                const markBlocks = line.trim().match(/(v@|c@|V@|C@)[\s\S]*?(?=(?:v@|c@|V@|C@)|$)/gi) || [];
+                markBlocks.forEach(block => {
+                    let content = '';
+                    if (block.startsWith('v@') || block.startsWith('V@')) content = block.slice(2).trim();
+                    else if (block.startsWith('c@') || block.startsWith('C@')) content = block.slice(2).trim();
+                    content.split(/\s+/).filter(item => item !== '.' && item !== '').forEach(item => {
+                        const parts = item.split('=');
+                        const phoneticRaw = parts[1] !== undefined ? parts[1] : parts[0].split('-').pop();
+                        const phonetic = phoneticRaw.trim();
+                        if (phonetic && phonetic !== '0') phonetics.add(phonetic.replace(/[^a-zA-Z0-9_]/g, '_').replace(/_+/g, '_'));
+                    });
+                });
+            });
+            return Array.from(phonetics);
+        }
+
+        function closeAllPopups() {
+            document.querySelectorAll('.key-popup.show').forEach(popup => popup.classList.remove('show'));
+        }
+
+        // ====================== 核心功能逻辑 ======================
+        let wordList = [], currentWordIndex = 0, currentWord = '', currentMeaning = '', isListeningWriteMode = false;
+        const wordListInput = document.getElementById('wordListInput');
+        const listenWriteStatus = document.getElementById('listenWriteStatus');
+
+        function updateMessageBox(text, type = 'normal') {
+            messageBox.className = 'message-box';
+            messageBox.textContent = text;
+            if (type === 'success') { messageBox.classList.add('success'); new Audio('good.mp3').play().catch(()=>{}); }
+            else if (type === 'error') { messageBox.classList.add('error'); new Audio('bad.mp3').play().catch(()=>{}); }
+            setTimeout(() => { messageBox.className = 'message-box'; messageBox.textContent = '准备就绪'; }, 3000);
+        }
+
+        function startListenWrite() {
+            wordList = wordListInput.value.split('\n').map(l => l.trim()).filter(l => l.includes('@')).map(l => { const [w,m]=l.split('@'); return {word:w.trim().toLowerCase(), meaning:m.trim()}; });
+            if (wordList.length === 0) { updateMessageBox('单词列表为空', 'error'); return; }
+            currentWordIndex = 0; isListeningWriteMode = true;
+            
+            // 自动切换到拼写模式
+            switchMode('spell');
+            
+            playCurrentWord();
+        }
+
+		/*
+        function playCurrentWord() {
+            if (currentWordIndex >= wordList.length) { updateMessageBox('全部完成！', 'success'); isListeningWriteMode = false; return; }
+            const item = wordList[currentWordIndex];
+            currentWord = item.word; currentMeaning = item.meaning;
+            listenWriteStatus.textContent = `第 ${currentWordIndex+1}/${wordList.length} 个`;
+            clearDanci();
+            setTimeout(() => { const url = `https://dict.youdao.com/dictvoice?audio=${currentWord}&type=1`; new Audio(url).play(); }, 300);
+        }
+		*/
+		function playCurrentWord() {
+			if (currentWordIndex >= wordList.length) { 
+				updateMessageBox('全部完成！', 'success'); 
+				isListeningWriteMode = false; 
+				return; 
+			}
+			
+			const item = wordList[currentWordIndex];
+			currentWord = item.word; 
+			currentMeaning = item.meaning;
+			listenWriteStatus.textContent = `第 ${currentWordIndex+1}/${wordList.length} 个`;
+			clearDanci();
+			
+			setTimeout(() => {
+				const url = `https://dict.youdao.com/dictvoice?audio=${currentWord}&type=1`;
+				const audio = new Audio(url);
+				let playedCount = 0; // 记录已播放次数
+
+				// 内部循环播放函数
+				const playLoop = () => {
+					if (playedCount >= dictationReadCount) return; // 达到设定次数，停止
+					audio.play().catch(e => console.error('播放失败', e));
+					playedCount++;
+				};
+
+				// 监听音频自然结束事件，结束后自动播放下一次
+				audio.onended = () => {
+					playLoop();
+				};
+
+				// 启动第一次播放
+				playLoop();
+			}, 300);
+		}
+
+        function checkListenWrite() {
+            if (!isListeningWriteMode) return;
+            const input = getDanciText();
+            if (input === currentWord) { updateMessageBox(`正确: ${currentWord}`, 'success'); setTimeout(() => { currentWordIndex++; playCurrentWord(); }, 500); }
+            else { 
+			updateMessageBox(`错误: ${input}, 正确: ${currentWord}`, 'error'); setTimeout(() => { playCurrentWord(); }, 100); 
+			}
+        }
+
+        function getDanciText() {
+            let text = '';
+            danciContainer.querySelectorAll('.unified-key, .combined-key').forEach(el => { if(!el.classList.contains('separator')) text += el.textContent.replace(/[^a-zA-Z]/g, '').toLowerCase(); });
+            return text;
+        }
+
+        // ====================== 模式管理 ======================
+        let currentMode = 'spell'; // 默认拼写模式：'sound', 'detail', 'spell'
+        let inputVisible = false; // 输入区域是否可见（默认隐藏）
+        
+        function toggleInputVisibility() {
+            inputVisible = !inputVisible;
+            const inputSection = document.querySelector('.input-section');
+            const showLabel = document.getElementById('showInputLabel');
+            const hideLabel = document.getElementById('hideInputLabel');
+            
+            if (inputVisible) {
+                inputSection.classList.remove('hidden');
+                showLabel.classList.add('active');
+                hideLabel.classList.remove('active');
+            } else {
+                inputSection.classList.add('hidden');
+                showLabel.classList.remove('active');
+                hideLabel.classList.add('active');
+            }
+        }
+        
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // 重置所有状态
+            soundOnlyMode = false;
+            detailViewMode = false;
+            popupFunctionEnabled = true;
+            danciContainer.classList.remove('disabled-mode');
+            
+            // 更新按钮激活状态
+            document.querySelectorAll('.toolbar-btn').forEach(btn => btn.classList.remove('active'));
+            
+            switch(mode) {
+                case 'sound':
+                    // 只读模式：只发音，弹窗可用
+                    soundOnlyMode = true;
+                    popupFunctionEnabled = true;
+                    document.getElementById('modeSound').classList.add('active');
+                    updateMessageBox('只读模式：点击琴键发声，白色区域可弹窗', 'normal');
+                    break;
+                    
+                case 'detail':
+                    // 单词表模式：点击打开详情页面
+                    detailViewMode = true;
+                    document.getElementById('modeDetail').classList.add('active');
+                    danciContainer.classList.add('disabled-mode');
+                    updateMessageBox('单词表模式：点击琴键打开单词详情', 'normal');
+                    break;
+                    
+                case 'spell':
+                    // 拼写模式：默认模式，可以拼写单词
+                    document.getElementById('modeSpell').classList.add('active');
+                    danciContainer.classList.remove('disabled-mode');
+                    updateMessageBox('拼写模式：点击琴键添加到拼写区', 'normal');
+                    break;
+            }
+        }
+        
+        // ====================== 旧的模式切换函数（保留兼容性）======================
+        function toggleMode() {
+            // 在新系统中，这个函数切换到只读模式
+            switchMode('sound');
+        }
+
+        function toggleDetailViewMode() {
+            // 在新系统中，这个函数切换到单词表模式
+            switchMode('detail');
+        }
+
+        function togglePopupFunction() {
+            // 在新系统中，这个函数切换到拼写模式
+            switchMode('spell');
+        }
+
+        function handleDetailClick(letter, phoneticCode) {
+            const symbol = map2[phoneticCode] || phoneticCode;
+            const isDark = document.body.classList.contains('dark-theme');
+            const b = isDark ? 0 : 1;
+            const url = `danci.html?z=${encodeURIComponent(letter)}&y=${encodeURIComponent(symbol)}&b=${b}`;
+            window.open(url, '_blank');
+        }
+
+        // 生成琴键
+        function generateKeys(input) {
+            const wordsContainer = document.getElementById('wordsContainer');
+            wordsContainer.innerHTML = '';
+            errorMsg.style.display = 'none';
+            lastTemplateElement = null;
+            
+            try {
+                const lines = input.split('\n').filter(line => line.trim().length > 0);
+                if (lines.length === 0) throw new Error('请输入有效的字母组合');
+                
+                lines.forEach(line => {
+                    const trimedLine = line.trim();
+                    const wordGroup = document.createElement('div');
+                    wordGroup.className = 'word-group';
+                    wordsContainer.appendChild(wordGroup);
+                    
+                    const markBlockRegex = /(v@|c@|V@|C@)[\s\S]*?(?=(?:v@|c@|V@|C@)|$)/gi;
+                    const markBlocks = trimedLine.match(markBlockRegex) || [];
+                    
+                    if (markBlocks.length === 0) throw new Error(`格式错误："${trimedLine}"`);
+                    
+                    markBlocks.forEach((block) => {
+                        const blockTrim = block.trim();
+                        if (blockTrim === '') return;
+                        
+                        let mark = '', keyContentStr = '';
+                        if (blockTrim.startsWith('v@') || blockTrim.startsWith('V@')) { mark = 'v@'; keyContentStr = blockTrim.slice(2).trim(); }
+                        else if (blockTrim.startsWith('c@') || blockTrim.startsWith('C@')) { mark = 'c@'; keyContentStr = blockTrim.slice(2).trim(); }
+                        if (!mark) return;
+                        
+                        const keyType = mark === 'v@' ? 'vowel' : 'consonant';
+                        const keyItems = keyContentStr.split(/\s+/).filter(item => item !== '');
+                        
+                        keyItems.forEach((keyItem) => {
+                            if (keyItem === '.') {
+                                const separatorKey = document.createElement('div');
+                                separatorKey.className = 'unified-key separator';
+                                separatorKey.textContent = '.';
+                                wordGroup.appendChild(separatorKey);
+                                return;
+                            }
+                            
+                            const [keyContent, phoneticRaw] = keyItem.split('=');
+                            const finalKeyContent = (keyContent || '').trim();
+                            const finalPhonetic = (phoneticRaw || finalKeyContent).trim();
+                            
+                            if (!finalKeyContent) return;
+                            
+                            if (finalKeyContent.includes('-')) createVerticalKeys(finalKeyContent, finalPhonetic, keyType, wordGroup);
+                            else createKey(finalKeyContent, finalPhonetic, keyType, wordGroup);
+                        });
+                    });
+                });
+            } catch (error) {
+                errorMsg.textContent = error.message;
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        // 创建单个琴键
+        function createKey(keyContent, phonetic, type, parent) {
+            const letter = keyContent.trim();
+            if (!letter) return;
+            
+            const key = document.createElement('div');
+            key.className = `unified-key ${type}-main`;
+            key.textContent = letter;
+            key.dataset.letter = letter;
+            key.dataset.phonetic = phonetic;
+            
+            const isTemplateKey = letter.includes('_');
+            if (isTemplateKey) {
+                key.classList.add('template-key');
+                const templateParts = letter.split('_');
+                key.dataset.templatePrefix = templateParts[0] || '';
+                key.dataset.templateSuffix = templateParts[1] || '';
+            }
+            
+            key.addEventListener('click', (e) => {
+                closeAllPopups();
+                
+                const rect = key.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const isLeftArea = clickX < rect.width / 2;
+                
+                // 1. 优先处理左侧白色区域 -> 弹出菜单
+                if (isLeftArea && popupFunctionEnabled && key.classList.contains('has-popup-tip')) {
+                    e.stopPropagation();
+                    const popup = key.parentElement.querySelector('.key-popup');
+                    if (popup) popup.classList.toggle('show');
+                    // 核心修改：点击白色区域直接返回，不更新按钮，不发声
+                    return; 
+                }
+                
+                // 2. 核心修改：只有在非白色区域点击（有效点击）时，才更新快捷按钮
+                updateShortcutBtn(letter, phonetic);
+                
+                // 3. 播放声音
+                playSound(phonetic);
+                key.classList.add('click-animate');
+                setTimeout(() => key.classList.remove('click-animate'), 150);
+                
+                // 4. 根据模式处理后续动作
+                if (detailViewMode) {
+                    handleDetailClick(letter, phonetic);
+                } else {
+                    if (!soundOnlyMode) {
+                        if (isTemplateKey) addTemplateToDanci(letter, type, phonetic);
+                        else {
+                            if (lastTemplateElement) embedConsonantToTemplate(letter, type, phonetic);
+                            else addToDanci(letter, type, phonetic, false);
+                        }
+                    }
+                }
+            });
+            
+            parent.appendChild(key);
+        }
+        
+        // 创建垂直组合琴键
+        function createVerticalKeys(compoundKeyContent, phonetic, type, parent) {
+            const subKeys = compoundKeyContent.split('-').filter(sub => sub.trim() !== '');
+            if (subKeys.length === 0) return;
+            
+            const verticalGroup = document.createElement('div');
+            verticalGroup.className = 'vertical-key-group';
+            const secondaryKeys = [];
+            
+            subKeys.forEach((letter, index) => {
+                const subKeyTrim = letter.trim();
+                const key = document.createElement('div');
+                key.className = `unified-key ${index === 0 ? `${type}-main` : `${type}-secondary`}`;
+                key.textContent = subKeyTrim;
+                key.dataset.phonetic = phonetic;
+                key.dataset.letter = subKeyTrim;
+                
+                const isTemplateKey = subKeyTrim.includes('_');
+                if (isTemplateKey) {
+                    key.classList.add('template-key');
+                    const templateParts = subKeyTrim.split('_');
+                    key.dataset.templatePrefix = templateParts[0] || '';
+                    key.dataset.templateSuffix = templateParts[1] || '';
+                }
+                
+                if (index > 0) secondaryKeys.push({ letter: subKeyTrim, type: type, phonetic: phonetic, isTemplateKey: isTemplateKey });
+                
+                key.addEventListener('click', (e) => {
+                    closeAllPopups();
+                    
+                    const rect = key.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const isLeftArea = clickX < rect.width / 2;
+                    
+                    // 1. 左侧白色区域 -> 弹出菜单
+                    if (index === 0 && isLeftArea && popupFunctionEnabled) {
+                        e.stopPropagation();
+                        const popup = verticalGroup.querySelector('.key-popup');
+                        if (popup) popup.classList.toggle('show');
+                        // 核心修改：点击白色区域直接返回，不更新按钮
+                        return;
+                    }
+                    
+                    // 2. 核心修改：只有在非白色区域点击（有效点击）时，才更新快捷按钮
+                    updateShortcutBtn(subKeyTrim, phonetic);
+                    
+                    // 3. 播放声音
+                    playSound(phonetic);
+                    key.classList.add('click-animate');
+                    setTimeout(() => key.classList.remove('click-animate'), 150);
+                    
+                    // 4. 模式判断
+                    if (detailViewMode) {
+                        handleDetailClick(subKeyTrim, phonetic);
+                    } else {
+                        if (!soundOnlyMode) {
+                            if (isTemplateKey) addTemplateToDanci(subKeyTrim, type, phonetic);
+                            else {
+                                if (lastTemplateElement) embedConsonantToTemplate(subKeyTrim, type, phonetic);
+                                else addToDanci(subKeyTrim, type, phonetic, index > 0);
+                            }
+                        }
+                    }
+                });
+                
+                verticalGroup.appendChild(key);
+            });
+
+            if (secondaryKeys.length > 0) {
+                const mainKey = verticalGroup.querySelector('.unified-key:first-child');
+                mainKey.classList.add('has-popup-tip');
+                createPopup(verticalGroup, secondaryKeys, type);
+            }
+
+            parent.appendChild(verticalGroup);
+        }
+
+        // 创建弹窗 (下拉菜单)
+        function createPopup(verticalGroup, secondaryKeys, mainType) {
+            const popup = document.createElement('div');
+            popup.className = 'key-popup';
+            
+            secondaryKeys.forEach(keyInfo => {
+                const popupItem = document.createElement('div');
+                popupItem.className = `popup-item ${mainType}-main`;
+                popupItem.textContent = keyInfo.letter;
+                popupItem.dataset.phonetic = keyInfo.phonetic;
+                popupItem.dataset.letter = keyInfo.letter;
+                
+                popupItem.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    // 点击子按钮是有效点击，更新快捷按钮
+                    updateShortcutBtn(keyInfo.letter, keyInfo.phonetic);
+                    
+                    // 1. 播放声音
+                    playSound(keyInfo.phonetic);
+                    popupItem.classList.add('click-animate');
+                    setTimeout(() => popupItem.classList.remove('click-animate'), 150);
+                    
+                    // 2. 模式判断
+                    if (detailViewMode) {
+                        handleDetailClick(keyInfo.letter, keyInfo.phonetic);
+                        popup.classList.remove('show'); 
+                    } else {
+                        if (!soundOnlyMode) {
+                            if (keyInfo.isTemplateKey) addTemplateToDanci(keyInfo.letter, mainType, keyInfo.phonetic);
+                            else {
+                                if (lastTemplateElement) embedConsonantToTemplate(keyInfo.letter, mainType, keyInfo.phonetic);
+                                else addToDanci(keyInfo.letter, mainType, keyInfo.phonetic, false);
+                            }
+                        }
+                        popup.classList.remove('show');
+                    }
+                });
+                
+                popup.appendChild(popupItem);
+            });
+            
+            verticalGroup.appendChild(popup);
+            
+            document.addEventListener('click', (e) => {
+                if (!verticalGroup.contains(e.target)) popup.classList.remove('show');
+            });
+        }
+
+        // 以下功能函数保持不变
+        function addTemplateToDanci(templateText, type, phonetic) {
+            const templateKey = document.createElement('div');
+            templateKey.className = `unified-key ${type}-main`;
+            templateKey.textContent = templateText;
+            templateKey.dataset.phonetic = phonetic;
+            templateKey.dataset.isTemplate = true;
+            templateKey.dataset.templatePrefix = templateText.split('_')[0] || '';
+            templateKey.dataset.templateSuffix = templateText.split('_')[1] || '';
+            templateKey.addEventListener('click', () => {
+                playSound(phonetic);
+                templateKey.classList.add('click-animate');
+                setTimeout(() => templateKey.classList.remove('click-animate'), 150);
+            });
+            if (lastTemplateElement && lastTemplateElement.parentNode === danciContainer) {
+                danciContainer.replaceChild(templateKey, lastTemplateElement);
+                const lastIndex = danciHistory.indexOf(lastTemplateElement);
+                if (lastIndex !== -1) danciHistory[lastIndex] = templateKey;
+            } else {
+                danciContainer.appendChild(templateKey);
+                danciHistory.push(templateKey);
+            }
+            lastTemplateElement = templateKey;
+        }
+
+        function embedConsonantToTemplate(consonant, consonantType, consonantPhonetic) {
+            if (!lastTemplateElement) return;
+            const prefix = lastTemplateElement.dataset.templatePrefix;
+            const suffix = lastTemplateElement.dataset.templateSuffix;
+            const templatePhonetic = lastTemplateElement.dataset.phonetic;
+            const templateType = lastTemplateElement.className.includes('vowel') ? 'vowel' : 'consonant';
+            
+            const combinedKey = document.createElement('div');
+            combinedKey.className = 'combined-key';
+            
+            const prefixPart = document.createElement('span');
+            prefixPart.className = `combined-key-part ${templateType}-main`;
+            prefixPart.textContent = prefix;
+            prefixPart.dataset.phonetic = templatePhonetic;
+            prefixPart.addEventListener('click', () => {
+                playSound(templatePhonetic);
+                prefixPart.style.transform = 'scale(1.1)';
+                prefixPart.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+                setTimeout(() => { prefixPart.style.transform = ''; prefixPart.style.backgroundColor = ''; }, 150);
+            });
+            
+            const consonantPart = document.createElement('span');
+            consonantPart.className = `combined-key-part ${consonantType}-main`;
+            consonantPart.textContent = consonant;
+            consonantPart.dataset.phonetic = consonantPhonetic;
+            consonantPart.addEventListener('click', () => {
+                playSound(consonantPhonetic);
+                consonantPart.style.transform = 'scale(1.1)';
+                consonantPart.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+                setTimeout(() => { consonantPart.style.transform = ''; consonantPart.style.backgroundColor = ''; }, 150);
+            });
+            
+            const suffixPart = document.createElement('span');
+            suffixPart.className = 'combined-key-part template-type-main non-interactive';
+            suffixPart.textContent = suffix;
+            
+            combinedKey.appendChild(prefixPart);
+            combinedKey.appendChild(consonantPart);
+            combinedKey.appendChild(suffixPart);
+            
+            danciContainer.replaceChild(combinedKey, lastTemplateElement);
+            const lastIndex = danciHistory.indexOf(lastTemplateElement);
+            if (lastIndex !== -1) danciHistory[lastIndex] = combinedKey;
+            else danciHistory.push(combinedKey);
+            lastTemplateElement = null;
+        }
+
+        function addToDanci(letter, type, phonetic, isSecondary) {
+            if (letter === '.') {
+                const key = document.createElement('div');
+                key.className = 'unified-key separator';
+                key.textContent = '|';
+                key.addEventListener('click', () => {
+                    key.classList.add('click-animate');
+                    setTimeout(() => key.classList.remove('click-animate'), 150);
+                });
+                danciContainer.appendChild(key);
+                danciHistory.push(key);
+                lastTemplateElement = null;
+                return;
+            }
+            const key = document.createElement('div');
+            key.className = `unified-key ${type}-main`;
+            key.textContent = letter;
+            key.dataset.phonetic = phonetic;
+            key.addEventListener('click', () => {
+                playSound(phonetic);
+                key.classList.add('click-animate');
+                setTimeout(() => key.classList.remove('click-animate'), 150);
+            });
+            danciContainer.appendChild(key);
+            danciHistory.push(key);
+            lastTemplateElement = null;
+        }
+        
+        function addSeparator() {
+            lastTemplateElement = null;
+            const key = document.createElement('div');
+            key.className = 'unified-key separator';
+            key.textContent = "|";
+            danciContainer.appendChild(key);
+            danciHistory.push(key);
+        }
+        
+        function clearDanci() {
+            lastTemplateElement = null;
+            danciContainer.innerHTML = '';
+            danciHistory.length = 0;
+        }
+        
+        function deleteLastDanci() {
+            if (danciHistory.length === 0) return;
+            const lastKey = danciHistory.pop();
+            if (lastKey.parentNode === danciContainer) lastKey.remove();
+            if (lastKey === lastTemplateElement) lastTemplateElement = null;
+        }
+        
+        function togglePopupFunction() {
+            popupFunctionEnabled = !popupFunctionEnabled;
+            updateMessageBox(`弹窗功能${popupFunctionEnabled ? '启用' : '禁用'}`, 'normal');
+            if (!popupFunctionEnabled) closeAllPopups();
+        }
+        
+        let autoDemoRunning = false;
+        function autoDemoKeys() {
+            const demoBtn = document.getElementById('demoPlayBtn');
+            
+            if (autoDemoRunning) {
+                autoDemoRunning = false;
+                demoBtn.classList.remove('running');
+                demoBtn.textContent = '▶';
+                updateMessageBox('演示已停止', 'normal');
+                return;
+            }
+            
+            const wordsContainer = document.getElementById('wordsContainer');
+            const allKeys = [];
+            
+            const groups = wordsContainer.querySelectorAll('.word-group');
+            groups.forEach(group => {
+                const children = group.children;
+                for (let i = 0; i < children.length; i++) {
+                    const child = children[i];
+                    
+                    if (child.classList.contains('vertical-key-group')) {
+                        const mainKey = child.querySelector('.unified-key:first-child');
+                        if (mainKey && !mainKey.classList.contains('separator')) {
+                            allKeys.push(mainKey);
+                        }
+                    } else if (child.classList.contains('unified-key') && !child.classList.contains('separator')) {
+                        allKeys.push(child);
+                    }
+                }
+            });
+            
+            if (allKeys.length === 0) {
+                updateMessageBox('没有可演示的按键', 'error');
+                return;
+            }
+            
+            autoDemoRunning = true;
+            demoBtn.classList.add('running');
+            demoBtn.textContent = '■';
+            updateMessageBox('按键演示中...点击按钮停止', 'normal');
+            
+            let index = 0;
+            const interval = 500;
+            
+            function demoNext() {
+                if (!autoDemoRunning || index >= allKeys.length) {
+                    autoDemoRunning = false;
+                    demoBtn.classList.remove('running');
+                    demoBtn.textContent = '▶';
+                    updateMessageBox('演示完成', 'success');
+                    return;
+                }
+                
+                const key = allKeys[index];
+                const phonetic = key.dataset.phonetic;
+                
+                key.classList.add('click-animate');
+                setTimeout(() => key.classList.remove('click-animate'), 150);
+                
+                if (phonetic) {
+                    playSound(phonetic);
+                }
+                
+                index++;
+                setTimeout(demoNext, interval);
+            }
+            
+            demoNext();
+        }
+        
+        function initCanvas() {
+            const cav = document.getElementById("cav");
+            if (!cav) return;
+            const cv = cav.getContext('2d');
+            let del = 0, line = 0;
+            const color1 = "red", color2 = "yellow";
+            cv.strokeStyle = color1;
+            cv.lineWidth = 2;
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key.toLowerCase() === 'p') {switchMode('sound');event.preventDefault();return;}
+                if (event.key.toLowerCase() === 'q') {deleteLastDanci();event.preventDefault();return;}
+                if (event.key.toLowerCase() === 'g' && currentMode === 'spell') {addSeparator();event.preventDefault();return;}
+                if (event.key === '1') {clearDanci();event.preventDefault();return;}
+                if (event.key === '3') {switchMode('spell');event.preventDefault();return;}
+                if (event.key === '4') {startListenWrite();event.preventDefault();return;}
+                if (event.key === '2') {switchMode('detail');event.preventDefault();return;}
+                if (event.key === '8') {autoDemoKeys();event.preventDefault();return;}
+                if (event.key === 'Enter') {checkListenWrite();event.preventDefault();return;}
+                
+                switch(event.keyCode) {
+                    case 66: del = del === 0 ? 1 : 0; break;
+                    case 87: cv.clearRect(0, 0, cav.width, cav.height); del = 0; break;
+                    case 67: line = line === 0 ? 1 : 0; cv.strokeStyle = line === 0 ? color1 : color2; break;
+                    case 86: cv.strokeStyle = 'red'; break;
+                }
+            });
+
+            cav.addEventListener('mousedown', function(e) {
+                const rect = cav.getBoundingClientRect();
+                const xRatio = cav.width / rect.width;
+                const yRatio = cav.height / rect.height;
+                const startX = (e.clientX - rect.left) * xRatio;
+                const startY = (e.clientY - rect.top) * yRatio;
+                
+                let points = [{x: startX, y: startY, time: Date.now()}];
+                let isDrawing = true, lastPressure = 0.5;
+                cv.beginPath();cv.moveTo(startX, startY);cv.lineCap = 'round';cv.lineJoin = 'round';
+                
+                const distance = (p1,p2) => Math.sqrt(Math.pow(p2.x-p1.x,2)+Math.pow(p2.y-p1.y,2));
+                const calculateSpeed = (points,index) => index<1?0:distance(points[index],points[index-1])/(points[index].time-points[index-1].time||1);
+                const drawOptimizedCurve = () => {
+                    if (points.length <3) return;
+                    cv.beginPath();cv.moveTo(points[0].x, points[0].y);
+                    for(let i=0;i<points.length-2;i++){
+                        const p0=points[i],p1=points[i+1],p2=points[i+2];
+                        const speed=calculateSpeed(points,i+1);
+                        const pressure=Math.max(0.3,Math.min(1.0,1.2-speed*0.5));
+                        lastPressure=pressure;
+                        const cp1x=p1.x+(p2.x-p0.x)/6,cp1y=p1.y+(p2.y-p0.y)/6;
+                        cv.lineWidth=2*pressure;
+                        cv.quadraticCurveTo(cp1x,cp1y,p1.x,p1.y);
+                    }
+                    cv.lineTo(points[points.length-1].x, points[points.length-1].y);cv.stroke();
+                };
+
+                const handleMouseMove = (e) => {
+                    if(!isDrawing) return;
+                    const x = (e.clientX - rect.left) * xRatio;
+                    const y = (e.clientY - rect.top) * yRatio;
+                    points.push({x,y,time:Date.now()});
+                    if(points.length>30) points.shift();
+                    if(del===0) drawOptimizedCurve();
+                    else cv.clearRect(x-15*lastPressure,y-15*lastPressure,30*lastPressure,30*lastPressure);
+                };
+                const handleMouseUp = () => {isDrawing=false;cav.removeEventListener('mousemove',handleMouseMove);document.removeEventListener('mouseup',handleMouseUp);};
+                cav.addEventListener('mousemove',handleMouseMove);
+                document.addEventListener('mouseup',handleMouseUp);
+            });
+        }
+        
+        function initTotalCanvas() {
+            const cav = document.getElementById("total");
+            if (!cav) return;
+            const cv = cav.getContext('2d');
+            let del = 0;
+            let currentColor = "black";
+            cv.strokeStyle = currentColor;
+            cv.lineWidth = 2;
+            let canvasVisible = false;
+            
+            const strokes = [];
+            
+            function updateCanvasSize() {
+                const dpr = window.devicePixelRatio || 1;
+                const docWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+                const docHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+                
+                cav.width = docWidth * dpr;
+                cav.height = docHeight * dpr;
+                cav.style.width = docWidth + 'px';
+                cav.style.height = docHeight + 'px';
+                
+                cv.setTransform(dpr, 0, 0, dpr, 0, 0);
+                cv.strokeStyle = currentColor;
+                cv.lineWidth = 2;
+                
+                redrawAll();
+            }
+            updateCanvasSize();
+            window.addEventListener('resize', updateCanvasSize);
+            
+            function redrawAll() {
+                const dpr = window.devicePixelRatio || 1;
+                cv.clearRect(0, 0, cav.width / dpr, cav.height / dpr);
+                
+                strokes.forEach(stroke => {
+                    if (stroke.type === 'path' && stroke.points.length > 0) {
+                        cv.beginPath();
+                        cv.strokeStyle = stroke.color;
+                        cv.lineWidth = stroke.lineWidth;
+                        cv.lineCap = 'round';
+                        cv.lineJoin = 'round';
+                        
+                        const firstPoint = stroke.points[0];
+                        cv.moveTo(firstPoint.x, firstPoint.y);
+                        
+                        for (let i = 1; i < stroke.points.length; i++) {
+                            const p = stroke.points[i];
+                            cv.lineTo(p.x, p.y);
+                        }
+                        cv.stroke();
+                    } else if (stroke.type === 'clear') {
+                        cv.clearRect(stroke.x - stroke.size, stroke.y - stroke.size, stroke.size * 2, stroke.size * 2);
+                    }
+                });
+                
+                cv.strokeStyle = currentColor;
+            }
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === '9') {
+                    canvasVisible = !canvasVisible;
+                    cav.style.display = canvasVisible ? 'block' : 'none';
+                    if (canvasVisible) {
+                        cav.classList.add('active');
+                        updateCanvasSize();
+                    } else {
+                        cav.classList.remove('active');
+                        strokes.length = 0;
+                        const dpr = window.devicePixelRatio || 1;
+                        cv.clearRect(0, 0, cav.width / dpr, cav.height / dpr);
+                    }
+                    event.preventDefault();
+                    return;
+                }
+                
+                if (!canvasVisible) return;
+                
+                switch(event.keyCode) {
+                    case 66: del = del === 0 ? 1 : 0; break;
+                    case 87: strokes.length = 0; const dprW = window.devicePixelRatio || 1; cv.clearRect(0, 0, cav.width / dprW, cav.height / dprW); del = 0; break;
+                    case 67: currentColor = currentColor === "red" ? "yellow" : "red"; cv.strokeStyle = currentColor; break;
+                    case 86: currentColor = "red"; cv.strokeStyle = currentColor; break;
+                }
+            });
+
+            function getEventPos(e) {
+                if (e.touches && e.touches.length > 0) {
+                    return {
+                        x: e.touches[0].pageX,
+                        y: e.touches[0].pageY
+                    };
+                }
+                return {
+                    x: e.pageX,
+                    y: e.pageY
+                };
+            }
+
+            function startDraw(e) {
+                if (!canvasVisible) return;
+                e.preventDefault();
+                
+                const pos = getEventPos(e);
+                let points = [{x: pos.x, y: pos.y, time: Date.now()}];
+                let isDrawing = true, lastPressure = 0.5;
+                
+                const distance = (p1, p2) => Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+                const calculateSpeed = (pts, index) => index < 1 ? 0 : distance(pts[index], pts[index - 1]) / (pts[index].time - pts[index - 1].time || 1);
+                
+                const currentStroke = {
+                    type: del === 0 ? 'path' : 'clear',
+                    color: currentColor,
+                    lineWidth: 2,
+                    points: points
+                };
+                
+                if (del === 0) {
+                    strokes.push(currentStroke);
+                }
+
+                const handleMove = (e) => {
+                    if (!isDrawing) return;
+                    e.preventDefault();
+                    const newPos = getEventPos(e);
+                    points.push({x: newPos.x, y: newPos.y, time: Date.now()});
+                    
+                    if (del === 0) {
+                        redrawAll();
+                    } else {
+                        const size = 15 * lastPressure;
+                        strokes.push({type: 'clear', x: newPos.x, y: newPos.y, size: size});
+                        cv.clearRect(newPos.x - size, newPos.y - size, size * 2, size * 2);
+                    }
+                };
+                
+                const handleEnd = () => {
+                    isDrawing = false;
+                    cav.removeEventListener('mousemove', handleMove);
+                    cav.removeEventListener('touchmove', handleMove);
+                    document.removeEventListener('mouseup', handleEnd);
+                    document.removeEventListener('touchend', handleEnd);
+                };
+                
+                cav.addEventListener('mousemove', handleMove);
+                cav.addEventListener('touchmove', handleMove, { passive: false });
+                document.addEventListener('mouseup', handleEnd);
+                document.addEventListener('touchend', handleEnd);
+            }
+
+            cav.addEventListener('mousedown', startDraw);
+            cav.addEventListener('touchstart', startDraw, { passive: false });
+        }
+        
+        // 主题切换功能
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeToggle = document.getElementById('themeToggle');
+            const icon = themeToggle.querySelector('.icon');
+            const text = themeToggle.querySelector('.text');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                icon.textContent = '☀️';
+                text.textContent = '浅色';
+            }
+        }
+        
+        function toggleTheme() {
+            const themeToggle = document.getElementById('themeToggle');
+            const icon = themeToggle.querySelector('.icon');
+            const text = themeToggle.querySelector('.text');
+            
+            document.body.classList.toggle('dark-theme');
+            
+            if (document.body.classList.contains('dark-theme')) {
+                localStorage.setItem('theme', 'dark');
+                icon.textContent = '☀️';
+                text.textContent = '浅色';
+            } else {
+                localStorage.setItem('theme', 'light');
+                icon.textContent = '🌙';
+                text.textContent = '暗色';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化主题
+            initTheme();
+            
+            // 主题切换按钮事件
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            const generateBtn = document.getElementById('generateBtn');
+            const letterInput = document.getElementById('letterInput');
+            const clearBtn = document.getElementById('clearDanci');
+            const loadAudioBtn = document.getElementById('loadAudioBtn');
+            const clearAudioCacheBtn = document.getElementById('clearAudioCacheBtn');
+            
+            generateKeys(letterInput.value);
+            initCanvas();
+            initTotalCanvas();
+            
+            // 初始化为拼写模式
+            switchMode('spell');
+            
+            // 自动加载键盘音频
+            preloadKeyboardAudio().then(() => {
+                updateMessageBox('发音加载完毕', 'success');
+            });
+            
+            generateBtn.addEventListener('click', () => generateKeys(letterInput.value));
+            clearBtn.addEventListener('click', clearDanci);
+            document.getElementById('backspaceDanci').addEventListener('click', deleteLastDanci);
+            document.getElementById('startListenWrite').addEventListener('click', startListenWrite);
+            document.getElementById('submitDanci').addEventListener('click', checkListenWrite);
+            
+            // 工具栏按钮事件绑定
+            document.getElementById('demoPlayBtn').addEventListener('click', autoDemoKeys);
+            document.getElementById('modeSound').addEventListener('click', () => switchMode('sound'));
+            document.getElementById('modeDetail').addEventListener('click', () => switchMode('detail'));
+            document.getElementById('modeSpell').addEventListener('click', () => switchMode('spell'));
+            
+            // 输入区域切换按钮
+            document.getElementById('inputToggle').addEventListener('click', toggleInputVisibility);
+            
+            loadAudioBtn.addEventListener('click', preloadKeyboardAudio);
+            clearAudioCacheBtn.addEventListener('click', clearAudioCache);
+            
+            letterInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    generateKeys(letterInput.value);
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

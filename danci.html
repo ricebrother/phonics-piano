@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词朗读系统</title>
+    <style>
+        /* CSS 变量 - 浅色主题（默认） */
+        :root {
+            --bg-primary: #f4f4f4;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f8f9fa;
+            --text-primary: #333;
+            --text-secondary: #555;
+            --text-muted: #666;
+            --border-color: #ddd;
+            --vowel-color: #d32f2f;
+            --consonant-color: #388E3C;
+            --btn-green: #4CAF50;
+            --btn-green-hover: #45a049;
+            --btn-blue: #2196F3;
+            --btn-blue-hover: #1976D2;
+            --btn-orange: #ff9800;
+            --shadow-light: rgba(0,0,0,0.1);
+            --shadow-medium: rgba(0,0,0,0.15);
+        }
+        
+        /* CSS 变量 - 暗色主题 */
+        body.dark-theme {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #e8e8e8;
+            --text-secondary: #d0d0d0;
+            --text-muted: #8a8a8a;
+            --border-color: #3a3a3a;
+            --vowel-color: #d4787d;
+            --consonant-color: #7ec89a;
+            --btn-green: #7ec89a;
+            --btn-green-hover: #8ed8aa;
+            --btn-blue: #7aa8d4;
+            --btn-blue-hover: #8ab8e4;
+            --btn-orange: #d4a656;
+            --shadow-light: rgba(0,0,0,0.2);
+            --shadow-medium: rgba(0,0,0,0.3);
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            background-color: var(--bg-primary);
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 75%;
+            transition: background-color 0.3s ease;
+        }
+        
+        /* 主题切换按钮 */
+        .theme-toggle-btn {
+            
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 1000;
+            display:none;
+        }
+        
+        .theme-toggle-btn:hover {
+            background-color: var(--border-color);
+        }
+        
+        .config-panel {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 5px var(--shadow-medium);
+            align-items: center;
+        }
+        .config-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .config-item label { font-size: 14px; color: var(--text-secondary); font-weight: bold; }
+        .config-item input {
+            width: 80px;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            transition: border-color 0.3s;
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+        .config-item input:focus { border-color: var(--consonant-color); outline: none; }
+        
+        .section-header {
+            margin: 30px 0 15px 0;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-secondary);
+            padding: 10px 15px;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 2px 4px var(--shadow-medium);
+        }
+        .read-btn {
+            padding: 8px 20px;
+            background: var(--btn-green);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px var(--shadow-medium);
+        }
+        .read-btn:hover { background: var(--btn-green-hover); transform: translateY(-1px); }
+        .read-btn:active { transform: translateY(1px); }
+        .read-btn.reading { background: var(--btn-orange); cursor: wait; }
+        .demo-btn {
+            padding: 8px 20px;
+            background: var(--btn-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px var(--shadow-medium);
+            margin-left: 10px;
+        }
+        .demo-btn:hover { background: var(--btn-blue-hover); transform: translateY(-1px); }
+        .demo-btn:active { transform: translateY(1px); }
+        .btn-group {
+            display: flex;
+            align-items: center;
+        }
+        
+        .word-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .word-grid.center-align {
+            justify-content: center;
+        }
+        .word-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+            padding: 20px 15px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 2px 5px var(--shadow-medium);
+            position: relative;
+            overflow: hidden;
+            min-width: 120px;
+        }
+        .word-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px var(--shadow-medium);
+            border-color: var(--text-muted);
+        }
+        .word-card:active {
+            transform: scale(0.96);
+            background-color: var(--bg-tertiary);
+        }
+
+        .word-text {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .word-text span { display: inline-block; }
+        .vowel-color { color: var(--vowel-color); }   /* 元音：红色 */
+        .cons-color { color: var(--consonant-color); }    /* 辅音：绿色 */
+        
+        .word-meaning {
+            font-size: 18px;
+            color: var(--text-primary);
+            border-top: 1px dashed var(--border-color);
+            padding-top: 8px;
+            margin-top: 5px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        
+        /* 朗读高亮样式 */
+        .word-card.highlight {
+            background-color: var(--bg-tertiary);
+            border-color: var(--btn-blue);
+            transform: scale(1.05);
+            box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.2);
+            z-index: 10;
+        }
+        
+        body.dark-theme .word-card.highlight {
+            box-shadow: 0 0 0 4px rgba(122, 168, 212, 0.3);
+        }
+        
+        /* 错误提示样式 */
+        .error-box {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 40px auto;
+            box-shadow: 0 4px 10px var(--shadow-medium);
+        }
+        .error-box h2 { color: var(--vowel-color); margin-bottom: 15px; }
+        .error-box p { line-height: 1.6; margin-bottom: 10px; }
+        .code-snippet {
+            background: var(--bg-tertiary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #d4a656;
+        }
+        
+ #drawCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            display: none;
+            cursor: pointer;
+            pointer-events: none;
+        }
+        #drawCanvas.active {
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="drawCanvas"></canvas>
+
+<button class="theme-toggle-btn" id="themeToggle">
+    <span class="icon">🌙</span>
+    <span class="text">暗色</span>
+</button>
+
+<div class="config-panel">
+    <div class="config-item">
+        <label>朗读次数：</label>
+        <input type="number" id="readCount" min="1" max="10" value="2">
+    </div>
+    <div class="config-item">
+        <label>重复间隔：</label>
+        <input type="number" id="repeatInterval" min="100" max="3000" value="300" step="100">
+    </div>
+    <div class="config-item">
+        <label>单词间隔：</label>
+        <input type="number" id="wordInterval" min="100" max="10000" value="500" step="100">
+    </div>
+</div>
+
+<div id="app-container"></div>
+
+<!-- 引入外部数据文件 -->
+<script src="database.js"></script>
+
+<!-- 主程序逻辑 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // ================= 主题切换功能 =================
+    function initTheme() {
+        const params = new URLSearchParams(window.location.search);
+        const bParam = params.get('b');
+        const themeToggle = document.getElementById('themeToggle');
+        const icon = themeToggle.querySelector('.icon');
+        const text = themeToggle.querySelector('.text');
+        
+        let isDark = false;
+        
+        if (bParam !== null) {
+            isDark = bParam === '0';
+        } else {
+            const savedTheme = localStorage.getItem('theme');
+            isDark = savedTheme === 'dark';
+        }
+        
+        if (isDark) {
+            document.body.classList.add('dark-theme');
+            icon.textContent = '☀️';
+            text.textContent = '浅色';
+        }
+    }
+    
+    function toggleTheme() {
+        const themeToggle = document.getElementById('themeToggle');
+        const icon = themeToggle.querySelector('.icon');
+        const text = themeToggle.querySelector('.text');
+        
+        document.body.classList.toggle('dark-theme');
+        
+        if (document.body.classList.contains('dark-theme')) {
+            localStorage.setItem('theme', 'dark');
+            icon.textContent = '☀️';
+            text.textContent = '浅色';
+        } else {
+            localStorage.setItem('theme', 'light');
+            icon.textContent = '🌙';
+            text.textContent = '暗色';
+        }
+    }
+    
+    // 初始化主题
+    initTheme();
+    
+    // 主题切换按钮事件
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+    // ================= A. 获取 URL 参数 =================
+    function getUrlParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            z: params.get('z') || '', // 字母
+            y: params.get('y') || ''  // 音标
+        };
+    }
+
+    // ================= B. 解析引擎 =================
+    function parseTextData(text) {
+        const data = { settings: {}, sections: [] };
+        const lines = text.split('\n');
+        
+        let currentSection = null;
+        let currentMode = null;
+
+        lines.forEach(line => {
+            line = line.trim();
+            if (!line) return;
+
+            if (line === '[设置]') { currentMode = 'settings'; return; }
+            else if (line.startsWith('[音节')) {
+                currentMode = 'section';
+                let num = line.replace(/[^\d]/g, ''); 
+                currentSection = { syllable: parseInt(num) || 0, words: [] };
+                data.sections.push(currentSection);
+                return;
+            }
+
+            if (line.includes('=')) {
+                const eqIndex = line.indexOf('=');
+                const key = line.substring(0, eqIndex).trim();
+                const val = line.substring(eqIndex + 1).trim();
+
+                if (currentMode === 'settings') {
+                    if(key === '字母') data.settings.zimu = val;
+                    if(key === '音标') data.settings.yinbiao = val;
+                } else if (currentMode === 'section' && currentSection) {
+                    currentSection.words.push({ rawText: key, meaning: val });
+                }
+            }
+        });
+        return data;
+    }
+
+    // ================= C. 样式转换 (保留原有逻辑) =================
+    function formatWordDisplay(rawText) {
+        const PLACEHOLDER = '\u0002';
+        let text = rawText.replace(/8-/g, PLACEHOLDER);
+        const parts = text.split('-');
+        let html = '';
+        
+        parts.forEach((part, index) => {
+            if (!part) return;
+            let content = part.replace(new RegExp(PLACEHOLDER, 'g'), '-');
+            
+            // 着色：奇数为元音(红)，偶数为辅音(绿)
+            if (index % 2 === 1) {
+                if(content) html += `<span class="vowel-color">${content}</span>`;
+            } else {
+                if(content) html += `<span class="cons-color">${content}</span>`;
+            }
+        });
+        return html;
+    }
+
+    function getPureWord(rawText) {
+        let text = rawText.replace(/8-/g, '\u0002');
+        text = text.replace(/-/g, '');
+        text = text.replace(/\u0002/g, '-');
+        return text;
+    }
+
+    // ================= D. 主渲染流程 =================
+    function main() {
+        const container = document.getElementById('app-container');
+        const { z, y } = getUrlParams();
+
+        // 1. 检查参数
+        if (!z || !y) {
+            container.innerHTML = `
+                <div class="error-box">
+                    <h2>👋 欢迎使用单词朗读系统</h2>
+                    <p>请在地址栏输入参数来开始学习。</p>
+                    <p>格式：<b>word.html?z=字母&y=音标</b></p>
+                    <p>例如：<span class="code-snippet">word.html?z=dr&y=dr</span></p>
+                </div>
+            `;
+            return;
+        }
+
+        // 2. 检查数据库
+        const key = `${z}_${y}`;
+        if (typeof WORD_DATABASE === 'undefined') {
+            container.innerHTML = '<div class="error-box"><h2>❌ 错误</h2><p>database.js 文件未加载或路径错误。</p></div>';
+            return;
+        }
+
+        const rawText = WORD_DATABASE[key];
+        if (!rawText) {
+            container.innerHTML = `
+                <div class="error-box">
+                    <h2>🔍 未找到数据</h2>
+                    <p>在数据库中没有找到键名为：<span class="code-snippet">${key}</span> 的数据。</p>
+                </div>
+            `;
+            return;
+        }
+
+        // 3. 解析并渲染
+        const pageData = parseTextData(rawText);
+        const zimu = pageData.settings.zimu || z;
+        const yinbiao = pageData.settings.yinbiao || y;
+
+        let html = '';
+        pageData.sections.forEach(section => {
+            const yinbiaoEncoded = encodeURIComponent(yinbiao);
+            html += `
+                <div class="section-header">
+                    <div>
+                        <span class="vowel-color" style='font-size:32px;font-weight:900;'>${zimu}</span><span style='color:var(--text-primary);'>&nbsp;→&nbsp;</span>
+                        <span class="cons-color" style='font-size:24px;font-family:Arial,sans-serif;'>/${yinbiao}/</span>
+                    </div>
+                    <div class="btn-group">
+                        <button class='read-btn' data-syllable='${section.syllable}'>
+                            📢 朗读 ${section.syllable} 音节单词
+                        </button>
+                        <button class='demo-btn' data-syllable='${section.syllable}' data-zimu='${zimu}' data-yinbiao='${yinbiaoEncoded}'>
+                            🎯 拼读演示
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            if (section.words.length > 0) {
+                html += `<div class='word-grid'>`;
+                section.words.forEach(item => {
+                    const pureWord = getPureWord(item.rawText);
+                    const displayHtml = formatWordDisplay(item.rawText);
+                    
+                    // 添加 title 属性，增加可访问性
+                    html += `
+                        <div class='word-card' data-word='${pureWord}' title='点击查看详情: ${pureWord}'>
+                            <div class='word-text'>${displayHtml}</div>
+                            <div class='word-meaning'>${item.meaning}</div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+        });
+
+        container.innerHTML = html;
+        bindEvents();
+    }
+
+    // ================= E. 交互逻辑 =================
+    const DEFAULT_CONFIG = { readCount: 2, repeatInterval: 300, wordInterval: 800 };
+    let readingState = {
+        isReading: false, currentSyllable: null, currentWordIndex: 0,
+        currentReadTimes: 0, wordList: [], activeTimer: null, activeAudio: null, activeTimeout: null
+    };
+
+    function getConfig() {
+        return {
+            readCount: Math.max(1, Math.min(10, parseInt(document.getElementById('readCount').value) || DEFAULT_CONFIG.readCount)),
+            repeatInterval: Math.max(100, Math.min(3000, parseInt(document.getElementById('repeatInterval').value) || DEFAULT_CONFIG.repeatInterval)),
+            wordInterval: Math.max(100, Math.min(10000, parseInt(document.getElementById('wordInterval').value) || DEFAULT_CONFIG.wordInterval))
+        };
+    }
+
+    function autoScrollToCard(cardElement) {
+        if (!cardElement) return;
+        const rect = cardElement.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        // 计算滚动位置，使卡片垂直居中
+        const targetScrollTop = window.scrollY + rect.top - (viewportHeight / 2) + (rect.height / 2);
+        window.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
+    }
+
+    function playSingleWord(cardElement, word, onComplete, retryCount = 0) {
+        const MAX_RETRIES = 3;
+        const TIMEOUT_MS = 5000;
+        
+        if (readingState.activeAudio) { 
+            readingState.activeAudio.pause(); 
+            readingState.activeAudio = null; 
+        }
+        
+        if (readingState.activeTimeout) {
+            clearTimeout(readingState.activeTimeout);
+            readingState.activeTimeout = null;
+        }
+        
+        autoScrollToCard(cardElement);
+        
+        document.querySelectorAll('.word-card.highlight').forEach(c => c.classList.remove('highlight'));
+        cardElement.classList.add('highlight');
+        
+        const audio = new Audio(`https://dict.youdao.com/dictvoice?type=0&audio=${encodeURIComponent(word)}`);
+        readingState.activeAudio = audio;
+        
+        let hasPlayed = false;
+        let timeoutId = null;
+        
+        const cleanup = () => {
+            if (timeoutId) clearTimeout(timeoutId);
+            cardElement.classList.remove('highlight');
+            readingState.activeAudio = null;
+            readingState.activeTimeout = null;
+        };
+        
+        const handleEnd = () => {
+            if (hasPlayed) return;
+            hasPlayed = true;
+            cleanup();
+            onComplete && onComplete();
+        };
+        
+        const handleError = () => {
+            if (hasPlayed) return;
+            hasPlayed = true;
+            cleanup();
+            
+            if (retryCount < MAX_RETRIES) {
+                console.warn(`音频加载失败，重试 ${retryCount + 1}/${MAX_RETRIES}: ${word}`);
+                playSingleWord(cardElement, word, onComplete, retryCount + 1);
+            } else {
+                console.error(`音频加载失败，已重试 ${MAX_RETRIES} 次: ${word}`);
+                onComplete && onComplete();
+            }
+        };
+        
+        audio.addEventListener('canplaythrough', () => {
+            if (hasPlayed) return;
+            if (timeoutId) clearTimeout(timeoutId);
+            audio.play().catch(err => {
+                console.warn('播放失败:', err);
+                handleError();
+            });
+        });
+        
+        audio.addEventListener('ended', handleEnd);
+        audio.addEventListener('error', handleError);
+        
+        timeoutId = setTimeout(() => {
+            if (hasPlayed) return;
+            console.warn(`音频加载超时: ${word}`);
+            handleError();
+        }, TIMEOUT_MS);
+        
+        readingState.activeTimeout = timeoutId;
+        audio.load();
+    }
+
+    function stopAllReading() {
+        if (readingState.activeTimer) clearTimeout(readingState.activeTimer);
+        if (readingState.activeTimeout) clearTimeout(readingState.activeTimeout);
+        if (readingState.activeAudio) readingState.activeAudio.pause();
+        
+        document.querySelectorAll('.word-card.highlight').forEach(c => c.classList.remove('highlight'));
+        document.querySelectorAll('.read-btn').forEach(btn => {
+            btn.classList.remove('reading');
+            const syllable = btn.dataset.syllable;
+            btn.innerHTML = `📢 朗读 ${syllable} 音节单词`;
+        });
+        
+        readingState = { ...readingState, isReading: false, wordList: [], activeTimer: null, activeAudio: null, activeTimeout: null };
+    }
+
+    function readNext() {
+        const config = getConfig();
+        const { wordList, currentWordIndex, currentReadTimes } = readingState;
+
+        if (!readingState.isReading || !wordList.length || currentWordIndex >= wordList.length) {
+            stopAllReading(); 
+            return;
+        }
+
+        const card = wordList[currentWordIndex];
+        const word = card.dataset.word;
+
+        if (currentReadTimes < config.readCount) {
+            // 重复读单词
+            playSingleWord(card, word, () => {
+                readingState.activeTimer = setTimeout(() => {
+                    readingState.currentReadTimes += 1;
+                    readNext();
+                }, config.repeatInterval);
+            });
+        } else {
+            // 切换到下一个单词
+            readingState.activeTimer = setTimeout(() => {
+                readingState.currentReadTimes = 0;
+                readingState.currentWordIndex += 1;
+                readNext();
+            }, config.wordInterval);
+        }
+    }
+
+    function bindEvents() {
+        document.querySelectorAll('.demo-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const syllable = this.dataset.syllable;
+                const zimu = this.dataset.zimu;
+                const yinbiao = decodeURIComponent(this.dataset.yinbiao);
+                const isDark = document.body.classList.contains('dark-theme');
+                const b = isDark ? 0 : 1;
+                
+                const targetUrl = `dancishow.html?z=${encodeURIComponent(zimu)}&y=${encodeURIComponent(yinbiao)}&s=${syllable}&b=${b}`;
+                window.open(targetUrl, '_blank');
+            });
+        });
+
+        document.querySelectorAll('.read-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const syllable = this.dataset.syllable;
+                
+                // 如果正在读，点击则是停止
+                if (readingState.isReading && readingState.currentSyllable == syllable) {
+                    stopAllReading(); 
+                    return;
+                }
+                
+                stopAllReading();
+
+                const grid = this.closest('.section-header').nextElementSibling;
+                if (!grid || !grid.classList.contains('word-grid')) return;
+                
+                readingState.wordList = Array.from(grid.querySelectorAll('.word-card'));
+                if (!readingState.wordList.length) return;
+
+                readingState.isReading = true;
+                readingState.currentSyllable = syllable;
+                readingState.currentWordIndex = 0;
+                
+                this.classList.add('reading');
+                this.textContent = `⏹ 停止朗读`;
+                
+                readNext();
+            });
+        });
+
+        // 2. 绑定单词卡片点击事件 (新增功能)
+        document.querySelectorAll('.word-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // 获取单词
+                const word = this.dataset.word;
+                if (!word) return;
+
+                // 获取含义
+                const meaningEl = this.querySelector('.word-meaning');
+                const meaning = meaningEl ? meaningEl.textContent : '';
+
+                const isDark = document.body.classList.contains('dark-theme');
+                const b = isDark ? 0 : 1;
+                const targetUrl = `speakword.html?w=${encodeURIComponent(word)}&m=${encodeURIComponent(meaning)}&b=${b}`;
+                window.open(targetUrl, '_blank');
+            });
+        });
+    }
+
+    // 执行主函数
+    main();
+    
+    // 初始化涂写画布
+    initDrawCanvas();
+    
+    function initDrawCanvas() {
+        const cav = document.getElementById("drawCanvas");
+        if (!cav) return;
+        const cv = cav.getContext('2d');
+        let del = 0;
+        let currentColor = "red";
+        cv.strokeStyle = currentColor;
+        cv.lineWidth = 2;
+        let canvasVisible = false;
+        
+        const strokes = [];
+        
+        function updateCanvasSize() {
+            const dpr = window.devicePixelRatio || 1;
+            const docWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+            const docHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+            
+            cav.width = docWidth * dpr;
+            cav.height = docHeight * dpr;
+            cav.style.width = docWidth + 'px';
+            cav.style.height = docHeight + 'px';
+            
+            cv.setTransform(dpr, 0, 0, dpr, 0, 0);
+            cv.strokeStyle = currentColor;
+            cv.lineWidth = 2;
+            
+            redrawAll();
+        }
+        updateCanvasSize();
+        window.addEventListener('resize', updateCanvasSize);
+        
+        function redrawAll() {
+            const dpr = window.devicePixelRatio || 1;
+            cv.clearRect(0, 0, cav.width / dpr, cav.height / dpr);
+            
+            strokes.forEach(stroke => {
+                if (stroke.type === 'path' && stroke.points.length > 0) {
+                    cv.beginPath();
+                    cv.strokeStyle = stroke.color;
+                    cv.lineWidth = stroke.lineWidth;
+                    cv.lineCap = 'round';
+                    cv.lineJoin = 'round';
+                    
+                    const firstPoint = stroke.points[0];
+                    cv.moveTo(firstPoint.x, firstPoint.y);
+                    
+                    for (let i = 1; i < stroke.points.length; i++) {
+                        const p = stroke.points[i];
+                        cv.lineTo(p.x, p.y);
+                    }
+                    cv.stroke();
+                } else if (stroke.type === 'clear') {
+                    cv.clearRect(stroke.x - stroke.size, stroke.y - stroke.size, stroke.size * 2, stroke.size * 2);
+                }
+            });
+            
+            cv.strokeStyle = currentColor;
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === '9') {
+                canvasVisible = !canvasVisible;
+                cav.style.display = canvasVisible ? 'block' : 'none';
+                if (canvasVisible) {
+                    cav.classList.add('active');
+                    updateCanvasSize();
+                } else {
+                    cav.classList.remove('active');
+                    strokes.length = 0;
+                    const dpr = window.devicePixelRatio || 1;
+                    cv.clearRect(0, 0, cav.width / dpr, cav.height / dpr);
+                }
+                event.preventDefault();
+                return;
+            }
+            
+            if (event.key === '0') {
+                document.querySelectorAll('.word-grid').forEach(grid => {
+                    grid.classList.toggle('center-align');
+                });
+                event.preventDefault();
+                return;
+            }
+            
+            if (!canvasVisible) return;
+            
+            switch(event.keyCode) {
+                case 66: del = del === 0 ? 1 : 0; break;
+                case 87: strokes.length = 0; const dprW = window.devicePixelRatio || 1; cv.clearRect(0, 0, cav.width / dprW, cav.height / dprW); del = 0; break;
+                case 67: currentColor = currentColor === "red" ? "yellow" : "red"; cv.strokeStyle = currentColor; break;
+                case 86: currentColor = "red"; cv.strokeStyle = currentColor; break;
+            }
+        });
+
+        function getEventPos(e) {
+            if (e.touches && e.touches.length > 0) {
+                return {
+                    x: e.touches[0].pageX,
+                    y: e.touches[0].pageY
+                };
+            }
+            return {
+                x: e.pageX,
+                y: e.pageY
+            };
+        }
+
+        function startDraw(e) {
+            if (!canvasVisible) return;
+            e.preventDefault();
+            
+            const pos = getEventPos(e);
+            let points = [{x: pos.x, y: pos.y, time: Date.now()}];
+            let isDrawing = true, lastPressure = 0.5;
+            
+            const distance = (p1, p2) => Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+            const calculateSpeed = (pts, index) => index < 1 ? 0 : distance(pts[index], pts[index - 1]) / (pts[index].time - pts[index - 1].time || 1);
+            
+            const currentStroke = {
+                type: del === 0 ? 'path' : 'clear',
+                color: currentColor,
+                lineWidth: 2,
+                points: points
+            };
+            
+            if (del === 0) {
+                strokes.push(currentStroke);
+            }
+
+            const handleMove = (e) => {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const newPos = getEventPos(e);
+                points.push({x: newPos.x, y: newPos.y, time: Date.now()});
+                
+                if (del === 0) {
+                    redrawAll();
+                } else {
+                    const size = 15 * lastPressure;
+                    strokes.push({type: 'clear', x: newPos.x, y: newPos.y, size: size});
+                    cv.clearRect(newPos.x - size, newPos.y - size, size * 2, size * 2);
+                }
+            };
+            
+            const handleEnd = () => {
+                isDrawing = false;
+                cav.removeEventListener('mousemove', handleMove);
+                cav.removeEventListener('touchmove', handleMove);
+                document.removeEventListener('mouseup', handleEnd);
+                document.removeEventListener('touchend', handleEnd);
+            };
+            
+            cav.addEventListener('mousemove', handleMove);
+            cav.addEventListener('touchmove', handleMove, { passive: false });
+            document.addEventListener('mouseup', handleEnd);
+            document.addEventListener('touchend', handleEnd);
+        }
+
+        cav.addEventListener('mousedown', startDraw);
+        cav.addEventListener('touchstart', startDraw, { passive: false });
+    }
+});
+</script>
+</body>
+</html>

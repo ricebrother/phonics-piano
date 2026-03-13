@@ -1,0 +1,16 @@
+:root {
+    --bg-primary: #121212;
+    --bg-secondary: #1e1e1e;
+    --bg-tertiary: #2a2a2a;
+    --text-primary: #e0e0e0;
+    --text-secondary: #c0c0c0;
+    --text-muted: #8a8a8a;
+    --border-color: #3a3a3a;
+    --vowel-color: #d4787d;
+    --consonant-color: #7ec89a;
+    --btn-blue: #7aa8d4;
+    --btn-orange: #d4a656;
+    --btn-purple: #a78bfa;
+    --success-bg: #1a2e1a;
+    --error-bg: #2e1a1a;
+}

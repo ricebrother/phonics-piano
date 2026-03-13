@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, minimum-scale=0.1, maximum-scale=10.0">
+    <title>单词单页学习工具</title>
+    <style>
+        /* CSS 变量 - 浅色主题（默认） */
+        :root {
+            --bg-primary: #f0f0f0;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f8f9fa;
+            --text-primary: #333;
+            --text-secondary: #555;
+            --text-muted: #666;
+            --border-color: #ddd;
+            --vowel-color: #ef4444;
+            --consonant-color: #22c55e;
+            --btn-blue: #4a90e2;
+            --btn-blue-hover: #3a80d2;
+            --btn-orange: #f59e0b;
+            --btn-orange-hover: #d97706;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+        }
+        
+        /* CSS 变量 - 暗色主题 */
+        body.dark-theme {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #e8e8e8;
+            --text-secondary: #d0d0d0;
+            --text-muted: #8a8a8a;
+            --border-color: #3a3a3a;
+            --vowel-color: #d4787d;
+            --consonant-color: #7ec89a;
+            --btn-blue: #7aa8d4;
+            --btn-blue-hover: #8ab8e4;
+            --btn-orange: #d4a656;
+            --btn-orange-hover: #e4b666;
+            --shadow-light: rgba(0, 0, 0, 0.2);
+            --shadow-medium: rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 基础样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        /* 主题切换按钮 */
+        .theme-toggle-btn {
+            
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 1000;
+            display:none;
+        }
+        
+        .theme-toggle-btn:hover {
+            background-color: var(--border-color);
+        }
+        
+        .card {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 25px;
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-medium);
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .word-meaning {
+            font-size: 34px;
+            color: var(--text-secondary);
+            margin-top: 12px;
+            min-height: 25px;
+            text-align: center;
+        }
+
+        /* 设置区域样式 */
+        .settings-panel {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 6px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            text-align: left;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .setting-item label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .setting-item input {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+        
+        /* 按钮样式 */
+        .controls {
+            margin-bottom: 30px;
+        }
+        
+        .btn-primary {
+            background-color: var(--btn-blue);
+            color: white;
+            font-weight: bold;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            box-shadow: 0 2px 4px var(--shadow-medium);
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--btn-blue-hover);
+        }
+        
+        .btn-primary:disabled {
+            background-color: #9ca3af;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .btn-stop {
+            background-color: var(--btn-orange);
+        }
+        .btn-stop:hover {
+            background-color: var(--btn-orange-hover);
+        }
+        
+        /* 字母按钮样式 */
+        .segment-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            min-height: 100px;
+            gap: 10px;
+            padding: 20px;
+        }
+        
+        .btn-vowel {
+            background-color: var(--vowel-color);
+            color: white;
+            font-weight: bold;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px var(--shadow-medium);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 40px;
+            min-width: 60px;
+        }
+        
+        .btn-consonant {
+            background-color: var(--consonant-color);
+            color: white;
+            font-weight: bold;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px var(--shadow-medium);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 40px;
+            min-width: 60px;
+        }
+        
+        .btn-vowel:hover, .btn-consonant:hover {
+            transform: scale(1.1);
+            opacity: 0.9;
+        }
+        
+        /* 动画 */
+        @keyframes glow {
+            0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); transform: scale(1.15); }
+            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.9); transform: scale(1.15); }
+            100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); transform: scale(1.15); }
+        }
+        
+        .glow {
+            animation: glow 0.2s ease-in-out infinite;
+        }
+
+        @keyframes wholeWordGlow {
+            0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); border: 2px solid gold; }
+            50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); border: 2px solid gold; }
+            100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); border: 2px solid gold; }
+        }
+        
+        .whole-word-glow {
+            animation: wholeWordGlow 0.2s ease-in-out infinite;
+        }
+
+        .status-msg {
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 16px;
+            min-height: 24px;
+        }
+        
+        .error-msg {
+            color: var(--vowel-color);
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .card {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 24px;
+                margin-bottom: 15px;
+            }
+            .settings-panel {
+                grid-template-columns: 1fr;
+                padding: 10px;
+                gap: 10px;
+            }
+            .setting-item {
+                flex-wrap: wrap;
+            }
+            .setting-item label {
+                font-size: 13px;
+            }
+            .controls {
+                margin-bottom: 20px;
+            }
+            .btn-primary {
+                padding: 10px 15px;
+                font-size: 14px;
+                margin: 5px;
+            }
+            .segment-container {
+                padding: 10px;
+                gap: 6px;
+                min-height: 60px;
+            }
+            .btn-vowel, .btn-consonant {
+                font-size: 24px;
+                padding: 8px 12px;
+                min-width: 40px;
+                border-radius: 8px;
+            }
+            .status-msg {
+                font-size: 14px;
+                margin-top: 10px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .btn-vowel, .btn-consonant {
+                font-size: 20px;
+                padding: 6px 10px;
+                min-width: 35px;
+                border-radius: 6px;
+            }
+            .segment-container {
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle-btn" id="themeToggle">
+        <span class="icon">🌙</span>
+        <span class="text">暗色</span>
+    </button>
+    
+    <div class="card">
+        <h1 id="wordTitle">单词</h1>
+        
+        <div class="settings-panel">
+            <div class="setting-item">
+                <label>字母朗读频次：</label>
+                <input type="number" id="letterCount" value="2" min="1" max="5">
+            </div>
+            <div class="setting-item">
+                <label>单词朗读频次：</label>
+                <input type="number" id="wordCount" value="2" min="1" max="5">
+            </div>
+            <div class="setting-item">
+                <label>字母之间间隔：</label>
+                <input type="number" id="letterInterval" value="300" min="0" step="100">
+            </div>
+            <div class="setting-item">
+                <label>单词朗读间隔：</label>
+                <input type="number" id="wordInterval" value="500" min="0" step="100">
+            </div>
+        </div>
+
+        <div id="wordMeaning" class="word-meaning"></div>
+        <div class="segment-container" id="segmentContainer">
+            <!-- 字母按钮将在这里生成 -->
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn" class="btn-primary">▶ 开始学习</button>
+            <button id="stopBtn" class="btn-primary btn-stop" disabled>■ 停止</button>
+        </div>
+
+        <div id="statusMsg" class="status-msg"></div>
+    </div>
+
+    <!-- 引入数据文件 -->
+    <script src="datapair.js"></script>
+    <script src="map.js"></script>
+
+    <script>
+        // ================= 主题切换功能 =================
+        function initTheme() {
+            const params = new URLSearchParams(window.location.search);
+            const bParam = params.get('b');
+            const themeToggle = document.getElementById('themeToggle');
+            const icon = themeToggle.querySelector('.icon');
+            const text = themeToggle.querySelector('.text');
+            
+            let isDark = false;
+            
+            if (bParam !== null) {
+                isDark = bParam === '0';
+            } else {
+                const savedTheme = localStorage.getItem('theme');
+                isDark = savedTheme === 'dark';
+            }
+            
+            if (isDark) {
+                document.body.classList.add('dark-theme');
+                icon.textContent = '☀️';
+                text.textContent = '浅色';
+            }
+        }
+        
+        function toggleTheme() {
+            const themeToggle = document.getElementById('themeToggle');
+            const icon = themeToggle.querySelector('.icon');
+            const text = themeToggle.querySelector('.text');
+            
+            document.body.classList.toggle('dark-theme');
+            
+            if (document.body.classList.contains('dark-theme')) {
+                localStorage.setItem('theme', 'dark');
+                icon.textContent = '☀️';
+                text.textContent = '浅色';
+            } else {
+                localStorage.setItem('theme', 'light');
+                icon.textContent = '🌙';
+                text.textContent = '暗色';
+            }
+        }
+        
+        // 初始化主题
+        initTheme();
+        
+        // 主题切换按钮事件
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        
+        // ====================== 页面逻辑 ======================
+
+        let segments = []; 
+        let isPlaying = false;
+        let stopFlag = false; 
+        let currentWord = '';
+
+        const wordTitle = document.getElementById('wordTitle');
+        const wordMeaning = document.getElementById('wordMeaning');
+        const segmentContainer = document.getElementById('segmentContainer');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const statusMsg = document.getElementById('statusMsg');
+        
+        const letterCountInput = document.getElementById('letterCount');
+        const wordCountInput = document.getElementById('wordCount');
+        const letterIntervalInput = document.getElementById('letterInterval');
+        const wordIntervalInput = document.getElementById('wordInterval');
+
+        function initPage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetWord = urlParams.get('w');
+
+            if (!targetWord) {
+                showError("未指定单词 (URL参数缺少 w)");
+                return;
+            }
+
+            if (typeof CHUZHONG1_DB === 'undefined') {
+                showError("未找到数据文件 (datapair.js)");
+                return;
+            }
+
+            const dbLines = CHUZHONG1_DB.split('\n');
+            let targetLine = '';
+            
+            for (let line of dbLines) {
+                if (line.trim().startsWith(targetWord + '=')) {
+                    targetLine = line.trim();
+                    break;
+                }
+            }
+
+            if (!targetLine) {
+                showError(`未在数据库中找到单词: ${targetWord}`);
+                return;
+            }
+
+            currentWord = targetWord;
+            wordTitle.textContent = targetWord;
+            
+            const meaning = urlParams.get('m') || '';
+            if (meaning) {
+                try {
+                    wordMeaning.textContent = decodeURIComponent(meaning);
+                } catch(e) {
+                    wordMeaning.textContent = meaning;
+                }
+            }
+
+            const dataPart = targetLine.split('=')[1]; 
+            const pairs = dataPart.split('8'); 
+
+            segments = [];
+            segmentContainer.innerHTML = ''; 
+
+            pairs.forEach(pair => {
+                const parts = pair.split('@');
+                if (parts.length >= 2) {
+                    const letter = parts[0];
+                    const phonetic = parts[1];
+                    
+                    // ====================== 双重判断逻辑 ======================
+                    let type = 'consonant'; // 默认辅音
+
+                    // 1. 优先：查表 (根据音标符号)
+                    const mapValue = soundTypeMap[phonetic];
+                    if (mapValue !== undefined) {
+                        type = mapValue === 1 ? 'vowel' : 'consonant';
+                    } else {
+                        // 2. 兜底：如果表中没有，检查字母组合是否包含元音字母
+                        // 只有当map里查不到（比如未定义的音标），才使用这个逻辑
+                        if (/[aeiou]/i.test(letter)) {
+                            type = 'vowel';
+                        } else {
+                            type = 'consonant';
+                        }
+                    }
+
+                    const btn = document.createElement('button');
+                    btn.className = type === 'vowel' ? 'btn-vowel' : 'btn-consonant';
+                    btn.textContent = letter;
+                    btn.dataset.phonetic = phonetic;
+                    btn.dataset.sound = phonetic; 
+
+                    btn.addEventListener('click', () => {
+                        if (isPlaying) stopLearning();
+                        stopFlag = false;
+                        btn.classList.add('glow');
+                        playAudio(btn.dataset.sound, () => {
+                            btn.classList.remove('glow');
+                        });
+                    });
+
+                    segmentContainer.appendChild(btn);
+
+                    segments.push({
+                        element: btn,
+                        letter: letter,
+                        sound: phonetic
+                    });
+                }
+            });
+
+            showStatus(`准备就绪：${segments.length} 个字母片段`);
+        }
+
+        // ====================== 音频播放逻辑 ======================
+        const MAX_RETRIES = 3;
+        const TIMEOUT_MS = 5000;
+        
+        function playAudio(sound, callback, retryCount = 0) {
+            if (stopFlag) {
+                if (callback) callback();
+                return;
+            }
+
+            const audioFileKey = phoneticToKeyMap[sound] || sound;
+            const localAudio = new Audio(`yinbiao/1/${audioFileKey}.mp3`);
+            
+            let hasCompleted = false;
+            let timeoutId = null;
+            
+            const cleanup = () => {
+                if (timeoutId) clearTimeout(timeoutId);
+            };
+            
+            const onEnd = () => {
+                if (hasCompleted) return;
+                hasCompleted = true;
+                cleanup();
+                if (callback) callback();
+            };
+            
+            const onError = () => {
+                if (hasCompleted) return;
+                hasCompleted = true;
+                cleanup();
+                
+                if (retryCount < MAX_RETRIES) {
+                    console.warn(`本地音频加载失败，重试 ${retryCount + 1}/${MAX_RETRIES}: ${audioFileKey}`);
+                    playAudio(sound, callback, retryCount + 1);
+                } else {
+                    console.error(`本地音频加载失败，已重试 ${MAX_RETRIES} 次: ${audioFileKey}`);
+                    if (callback) callback();
+                }
+            };
+            
+            localAudio.oncanplaythrough = () => {
+                if (hasCompleted) return;
+                if (timeoutId) clearTimeout(timeoutId);
+                localAudio.play().catch(e => {
+                    console.warn("本地音频播放失败", e);
+                    onError();
+                });
+            };
+            
+            localAudio.onended = onEnd;
+            localAudio.onerror = onError;
+            
+            timeoutId = setTimeout(() => {
+                if (hasCompleted) return;
+                console.warn(`本地音频加载超时: ${audioFileKey}`);
+                onError();
+            }, TIMEOUT_MS);
+            
+            localAudio.load();
+        }
+
+        function playSegmentSound(btnElement, count, interval, nextCallback) {
+            if (stopFlag) return;
+
+            if (count > 0) {
+                btnElement.classList.add('glow');
+                
+                playAudio(btnElement.dataset.sound, () => {
+                    if (stopFlag) return;
+                    setTimeout(() => {
+                        btnElement.classList.remove('glow');
+                        setTimeout(() => {
+                            playSegmentSound(btnElement, count - 1, interval, nextCallback);
+                        }, 200); 
+                    }, 300);
+                });
+            } else {
+                if (nextCallback) nextCallback();
+            }
+        }
+
+        function playWholeWord(count, interval, nextCallback, retryCount = 0) {
+            if (stopFlag) return;
+
+            if (count > 0) {
+                segments.forEach(seg => seg.element.classList.add('whole-word-glow'));
+                
+                let hasCompleted = false;
+                let timeoutId = null;
+                
+                const cleanup = () => {
+                    if (timeoutId) clearTimeout(timeoutId);
+                    segments.forEach(seg => seg.element.classList.remove('whole-word-glow'));
+                };
+                
+                const onEnd = () => {
+                    if (hasCompleted) return;
+                    hasCompleted = true;
+                    cleanup();
+                    
+                    setTimeout(() => {
+                        playWholeWord(count - 1, interval, nextCallback, 0);
+                    }, interval);
+                };
+                
+                const onError = () => {
+                    if (hasCompleted) return;
+                    hasCompleted = true;
+                    cleanup();
+                    
+                    if (retryCount < MAX_RETRIES) {
+                        console.warn(`整词音频加载失败，重试 ${retryCount + 1}/${MAX_RETRIES}: ${currentWord}`);
+                        playWholeWord(count, interval, nextCallback, retryCount + 1);
+                    } else {
+                        console.error(`整词音频加载失败，已重试 ${MAX_RETRIES} 次: ${currentWord}`);
+                        if (nextCallback) nextCallback();
+                    }
+                };
+                
+                const audio = new Audio(`https://dict.youdao.com/dictvoice?type=1&audio=${encodeURIComponent(currentWord)}`);
+                
+                audio.oncanplaythrough = () => {
+                    if (hasCompleted) return;
+                    if (timeoutId) clearTimeout(timeoutId);
+                    audio.play().catch(e => {
+                        console.warn("整词音频播放失败", e);
+                        onError();
+                    });
+                };
+                
+                audio.onended = onEnd;
+                audio.onerror = onError;
+                
+                timeoutId = setTimeout(() => {
+                    if (hasCompleted) return;
+                    console.warn(`整词音频加载超时: ${currentWord}`);
+                    onError();
+                }, TIMEOUT_MS);
+                
+                audio.load();
+            } else {
+                if (nextCallback) nextCallback();
+            }
+        }
+
+        async function startLearning() {
+            if (segments.length === 0) return;
+            
+            isPlaying = true;
+            stopFlag = false;
+            
+            toggleInputs(true);
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+
+            const lCount = parseInt(letterCountInput.value) || 1;
+            const wCount = parseInt(wordCountInput.value) || 1;
+            const lInterval = parseInt(letterIntervalInput.value) || 0;
+            const wInterval = parseInt(wordIntervalInput.value) || 0;
+
+            showStatus("正在朗读单词...");
+            await new Promise(resolve => {
+                playWholeWord(wCount, wInterval, resolve);
+            });
+
+            if (stopFlag) {
+                finishLearning();
+                return;
+            }
+
+            showStatus("正在朗读字母...");
+            for (let i = 0; i < segments.length; i++) {
+                if (stopFlag) break;
+                const seg = segments[i];
+                
+                await new Promise(resolve => {
+                    playSegmentSound(seg.element, lCount, lInterval, resolve);
+                });
+                
+                if (i < segments.length - 1 && !stopFlag) {
+                    await new Promise(r => setTimeout(r, lInterval));
+                }
+            }
+
+            if (stopFlag) {
+                finishLearning();
+                return;
+            }
+
+            showStatus("正在朗读单词...");
+            await new Promise(resolve => {
+                playWholeWord(wCount, wInterval, resolve);
+            });
+
+            finishLearning();
+        }
+
+        function stopLearning() {
+            stopFlag = true;
+            isPlaying = false;
+            
+            const audios = document.getElementsByTagName('audio');
+            for(let a of audios) a.pause();
+            
+            segments.forEach(seg => {
+                seg.element.classList.remove('glow');
+                seg.element.classList.remove('whole-word-glow');
+            });
+
+            showStatus("已停止");
+            toggleInputs(false);
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        }
+
+        function finishLearning() {
+            isPlaying = false;
+            showStatus("学习完成！");
+            toggleInputs(false);
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        }
+
+        function toggleInputs(disabled) {
+            letterCountInput.disabled = disabled;
+            wordCountInput.disabled = disabled;
+            letterIntervalInput.disabled = disabled;
+            wordIntervalInput.disabled = disabled;
+        }
+
+        function showError(msg) {
+            wordTitle.textContent = "错误";
+            statusMsg.innerHTML = `<span class="error-msg">${msg}</span>`;
+            startBtn.disabled = true;
+        }
+        
+        function showStatus(msg) {
+            statusMsg.textContent = msg;
+        }
+
+        startBtn.addEventListener('click', startLearning);
+        stopBtn.addEventListener('click', stopLearning);
+
+        document.addEventListener('DOMContentLoaded', initPage);
+
+    </script>
+</body>
+</html>
